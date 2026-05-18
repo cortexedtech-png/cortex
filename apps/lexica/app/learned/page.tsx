@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Trophy, Save, Sparkles, BookMarked, RotateCcw, Zap } from 'lucide-react';
+import { BookOpen, Trophy, Save, Sparkles, BookMarked, RotateCcw, Gamepad2, Zap } from 'lucide-react';
 import { useLexicaStore } from '../store/lexicaStore';
-import SpeedQuiz from '../components/SpeedQuiz';
+import GameHub from '../components/GameHub';
 import {
     STORIES,
     getStoryLearnedCount,
@@ -57,7 +57,7 @@ function getLevelBadgeClasses(level: string) {
 export default function LearnedPage() {
     const router = useRouter();
     const [showHelp, setShowHelp] = useState(false);
-    const [showSpeedQuiz, setShowSpeedQuiz] = useState(false);
+    const [showGameHub, setShowGameHub] = useState(false);
     const { buttonPress, click } = useSoundEffects();
     const learnedCount = useLexicaStore(state => state.learnedWords.size);
     const learnedWords = useLexicaStore(state => state.learnedWords);
@@ -149,26 +149,26 @@ export default function LearnedPage() {
                 )}
             </div>
 
-            {/* Speed Quiz Card */}
+            {/* Vocabulary Games Card */}
             {learnedCount >= 4 && (
                 <div className="max-w-5xl mx-auto mb-8">
                     <button
                         onClick={() => {
                             buttonPress();
-                            setShowSpeedQuiz(true);
+                            setShowGameHub(true);
                         }}
                         className="w-full flex items-center justify-between p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-400 transition-all hover:scale-[1.01] active:scale-95 group"
                     >
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-cyan-500/20">
-                                <Zap className="w-5 h-5 text-cyan-400" />
+                                <Gamepad2 className="w-5 h-5 text-cyan-400" />
                             </div>
                             <div className="text-left">
                                 <div className="text-cyan-200 font-semibold text-sm mb-1">
-                                    Speed Quiz - Ôn tập endless
+                                    Vocabulary Games
                                 </div>
                                 <div className="text-cyan-400/70 text-xs">
-                                    {todayLearnedWords.size} từ hôm nay • {learnedCount} từ tổng
+                                    7 games để ôn tập từ vựng
                                 </div>
                             </div>
                         </div>
@@ -396,12 +396,12 @@ export default function LearnedPage() {
                 </p>
             </div>
 
-            {/* Speed Quiz Modal */}
-            {showSpeedQuiz && (
-                <SpeedQuiz
+            {/* Game Hub Modal */}
+            {showGameHub && (
+                <GameHub
                     learnedWordIds={Array.from(learnedWords)}
                     todayWordIds={Array.from(todayLearnedWords)}
-                    onClose={() => setShowSpeedQuiz(false)}
+                    onClose={() => setShowGameHub(false)}
                 />
             )}
 
