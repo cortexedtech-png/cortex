@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Trophy, X, Zap } from 'lucide-react';
 import { useSoundEffects } from '../hooks/useSoundEffects';
 import { VOCAB_DATABASE } from '../data/vocabCards';
+import { VocabCardData } from '../components/VocabCard';
 
 interface ComboChainProps {
     learnedWordIds: string[];
@@ -14,7 +15,7 @@ interface ComboChainProps {
 export default function ComboChain({ learnedWordIds, onClose }: ComboChainProps) {
     const { click, quizCorrect, quizWrong } = useSoundEffects();
 
-    const [currentCard, setCurrentCard] = useState<any>(null);
+    const [currentCard, setCurrentCard] = useState<Omit<VocabCardData, 'state'> | null>(null);
     const [options, setOptions] = useState<string[]>([]);
     const [score, setScore] = useState(0);
     const [combo, setCombo] = useState(0);
@@ -23,30 +24,55 @@ export default function ComboChain({ learnedWordIds, onClose }: ComboChainProps)
     const [isPlaying, setIsPlaying] = useState(false);
     const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-    const [highScore, setHighScore] = useState<number | null>(null);
-
-    useEffect(() => {
+    const [highScore, setHighScore] = useState<number | null>(() => {
         const saved = localStorage.getItem('comboChain_highScore');
-        if (saved) setHighScore(parseInt(saved));
-    }, []);
+        return saved ? parseInt(saved) : null;
+    });
+
+    const getRandomIndex = (arrayLength: number): number => {
+        const randomBuffer = new Uint32Array(1);
+        crypto.getRandomValues(randomBuffer);
+        return randomBuffer[0] % arrayLength;
+    };
+
+    const getRandomWordId = () => {
+        return learnedWordIds[getRandomIndex(learnedWordIds.length)];
+    };
 
     const generateQuestion = () => {
-        const randomId = learnedWordIds[Math.floor(Math.random() * learnedWordIds.length)];
+        const randomId = getRandomWordId();
         const card = VOCAB_DATABASE.find(c => c.id === randomId);
         if (!card) return;
 
         // Get 3 wrong answers
-        const wrongOptions = VOCAB_DATABASE
-            .filter(c => learnedWordIds.includes(c.id) && c.id !== card.id)
-            .sort(() => Math.random() - 0.5)
-            .slice(0, 3)
-            .map(c => c.translationHint);
+        const allOtherCards = VOCAB_DATABASE
+            .filter(c => learnedWordIds.includes(c.id) && c.id !== card.id);
 
-        // Shuffle with correct answer
-        const allOptions = [card.translationHint, ...wrongOptions].sort(() => Math.random() - 0.5);
+        const wrongOptions: string[] = [];
+        const usedIndices = new Set<number>();
+
+        while (wrongOptions.length < 3 && wrongOptions.length < allOtherCards.length) {
+            const idx = getRandomIndex(allOtherCards.length);
+            if (!usedIndices.has(idx)) {
+                usedIndices.add(idx);
+                wrongOptions.push(allOtherCards[idx].translationHint);
+            }
+        }
+
+        // Shuffle options
+        const allOptions = [card.translationHint, ...wrongOptions];
+        const shuffled: string[] = [];
+        const optionsSet = new Set(allOptions.map((_, i) => i));
+
+        while (shuffled.length < allOptions.length) {
+            const remaining = Array.from(optionsSet);
+            const idx = remaining[getRandomIndex(remaining.length)];
+            optionsSet.delete(idx);
+            shuffled.push(allOptions[idx]);
+        }
 
         setCurrentCard(card);
-        setOptions(allOptions);
+        setOptions(shuffled);
         setFeedback(null);
         setSelectedAnswer(null);
     };
@@ -211,10 +237,10 @@ export default function ComboChain({ learnedWordIds, onClose }: ComboChainProps)
                             initial={{ x: 20, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             className={`p-6 rounded-lg border-2 text-center transition-all ${feedback === 'correct'
-                                    ? 'bg-green-500/10 border-green-500'
-                                    : feedback === 'wrong'
-                                        ? 'bg-red-500/10 border-red-500'
-                                        : 'bg-slate-700/50 border-slate-600'
+                                ? 'bg-green-500/10 border-green-500'
+                                : feedback === 'wrong'
+                                    ? 'bg-red-500/10 border-red-500'
+                                    : 'bg-slate-700/50 border-slate-600'
                                 }`}
                         >
                             <p className="text-xs text-slate-500 mb-2">English word:</p>
@@ -239,18 +265,18 @@ export default function ComboChain({ learnedWordIds, onClose }: ComboChainProps)
                                         onClick={() => handleAnswer(option)}
                                         disabled={feedback !== null}
                                         className={`p-4 rounded-lg border-2 text-left transition-all ${showResult && isCorrect
-                                                ? 'bg-green-500/20 border-green-500 text-white'
-                                                : showResult && isSelected
-                                                    ? 'bg-red-500/20 border-red-500 text-white'
-                                                    : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:border-cyan-500'
+                                            ? 'bg-green-500/20 border-green-500 text-white'
+                                            : showResult && isSelected
+                                                ? 'bg-red-500/20 border-red-500 text-white'
+                                                : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:border-cyan-500'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold ${showResult && isCorrect
-                                                    ? 'border-green-500 text-green-400'
-                                                    : showResult && isSelected
-                                                        ? 'border-red-500 text-red-400'
-                                                        : 'border-slate-500 text-slate-500'
+                                                ? 'border-green-500 text-green-400'
+                                                : showResult && isSelected
+                                                    ? 'border-red-500 text-red-400'
+                                                    : 'border-slate-500 text-slate-500'
                                                 }`}>
                                                 {String.fromCharCode(65 + index)}
                                             </div>

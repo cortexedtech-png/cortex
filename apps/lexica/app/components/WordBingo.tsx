@@ -285,10 +285,10 @@ export default function WordBingo({ learnedWordIds, onClose }: WordBingoProps) {
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             className={`p-4 rounded-lg border-2 text-center transition-all ${feedback === 'correct'
-                                    ? 'bg-green-500/10 border-green-500'
-                                    : feedback === 'wrong'
-                                        ? 'bg-red-500/10 border-red-500'
-                                        : 'bg-slate-700/50 border-slate-600'
+                                ? 'bg-green-500/10 border-green-500'
+                                : feedback === 'wrong'
+                                    ? 'bg-red-500/10 border-red-500'
+                                    : 'bg-slate-700/50 border-slate-600'
                                 }`}
                         >
                             <p className="text-xs text-slate-500 mb-1">Find the meaning:</p>

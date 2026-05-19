@@ -220,10 +220,10 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
                                 onKeyPress={handleKeyPress}
                                 placeholder="Type the English word..."
                                 className={`w-full px-4 py-3 bg-slate-700 border-2 rounded-lg text-white text-lg text-center transition-all outline-none ${feedback === 'correct'
-                                        ? 'border-green-500 bg-green-500/10'
-                                        : feedback === 'wrong'
-                                            ? 'border-red-500 bg-red-500/10'
-                                            : 'border-slate-600 focus:border-cyan-500'
+                                    ? 'border-green-500 bg-green-500/10'
+                                    : feedback === 'wrong'
+                                        ? 'border-red-500 bg-red-500/10'
+                                        : 'border-slate-600 focus:border-cyan-500'
                                     }`}
                                 disabled={feedback !== null}
                             />

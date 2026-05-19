@@ -9,6 +9,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import EnergyBar from './components/EnergyBar';
 import ErrorBoundary from './components/ErrorBoundary';
 import SwipeDeck from './components/SwipeDeck';
+import InteractiveTour, { getTourSteps } from './components/InteractiveTour';
+import { useTour } from './hooks/useTour';
 // Story modals now handled by routes: /story/[id], /story/[id]/unlock-quiz, /story/[id]/unlock
 // Level selection now handled by route: /level-select
 import { useLexicaStore, initializeLexicaStore } from './store/lexicaStore';
@@ -45,6 +47,7 @@ function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { buttonPress, click } = useSoundEffects();
+  const { startTour, hasSeenTour } = useTour();
 
   // Helper function to change level - ensures proper redirect to /level-select
   const handleChangeLevel = () => {
@@ -360,7 +363,7 @@ function HomeContent() {
       <button
         onClick={() => {
           click();
-          setShowOnboarding(true);
+          startTour(getTourSteps());
         }}
         className="lg:hidden fixed top-25.5 left-4 z-50 w-8 h-8 rounded-full bg-slate-700 border border-slate-600 hover:border-cyan-500 hover:bg-slate-600 transition-colors flex items-center justify-center text-slate-400 hover:text-cyan-400 text-sm font-bold"
         aria-label="Hướng dẫn"
@@ -370,13 +373,16 @@ function HomeContent() {
       <button
         onClick={() => {
           click();
-          setShowOnboarding(true);
+          startTour(getTourSteps());
         }}
         className="hidden lg:flex fixed bottom-5 right-5 z-50 w-8 h-8 rounded-full bg-slate-700 border border-slate-600 hover:border-cyan-500 hover:bg-slate-600 transition-colors items-center justify-center text-slate-400 hover:text-cyan-400 text-sm font-bold"
         aria-label="Hướng dẫn"
       >
         ?
       </button>
+
+      {/* Interactive Tour Component */}
+      <InteractiveTour autoStart={hasSeenOnboarding && selectedLevel !== null && !hasSeenTour} />
 
       {/* Energy Bar Header */}
       <EnergyBar currentEnergy={energy} maxEnergy={maxEnergy} streak={currentStreak} />
@@ -401,7 +407,7 @@ function HomeContent() {
         {/* Left Column - Swipe Deck */}
         <div className="w-full lg:flex-1 lg:max-w-lg flex flex-col items-center justify-center lg:h-full lg:min-h-150">
           {/* Swipe Deck */}
-          <div className="w-full max-w-md flex items-center justify-center">
+          <div className="w-full max-w-md flex items-center justify-center" data-tour-id="swipe-deck">
             <ErrorBoundary>
               <SwipeDeck />
             </ErrorBoundary>
@@ -488,6 +494,7 @@ function HomeContent() {
               <div className="flex items-center justify-between">
                 <span className="text-slate-400 text-sm">Chế độ swipe</span>
                 <button
+                  data-tour-id="voice-mode-toggle"
                   onClick={() => {
                     click();
                     setSwipeMode(isVoiceMode ? 'touch' : 'voice');
@@ -507,7 +514,7 @@ function HomeContent() {
             <div className="hidden lg:block space-y-3">
               <h3 className="text-slate-400 text-xs uppercase tracking-wider font-medium">Performance</h3>
 
-              <div className="flex justify-between items-center group" title="Your current ELO rating">
+              <div className="flex justify-between items-center group" title="Your current ELO rating" data-tour-id="elo-rating">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-cyan-400" />
                   <span className="text-slate-300 text-sm">ELO Rating</span>
@@ -520,7 +527,7 @@ function HomeContent() {
             <div className="space-y-3 pt-4 border-t border-slate-700">
               <h3 className="text-slate-400 text-xs uppercase tracking-wider font-medium">Progress</h3>
 
-              <div className="flex justify-between items-center" title="Words you've started learning">
+              <div className="flex justify-between items-center" title="Words you've started learning" data-tour-id="learned-counter">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-cyan-400" />
                   <span className="text-slate-300 text-sm">Learned</span>
@@ -539,7 +546,7 @@ function HomeContent() {
 
             {/* Learned Words Link - Desktop */}
             <div className="pt-4 border-t border-slate-700 space-y-2">
-              <Link href="/learned">
+              <Link href="/learned" data-tour-id="learned-words-link">
                 <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700 hover:border-cyan-500 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -551,7 +558,7 @@ function HomeContent() {
                 </div>
               </Link>
               {dueToday > 0 && (
-                <Link href="/review">
+                <Link href="/review" data-tour-id="review-link">
                   <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 hover:border-amber-400 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer mt-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">

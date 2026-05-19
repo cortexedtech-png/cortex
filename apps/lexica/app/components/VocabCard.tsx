@@ -94,7 +94,6 @@ export default function VocabCard({ card, index, onSwipe, revealed: controlledRe
         startListening,
         stopListening,
         setHolding,
-        lastSpokenWord,
         canStartListening,
     } = useVocalSwipe({
         targetWord: card.word,
@@ -107,6 +106,7 @@ export default function VocabCard({ card, index, onSwipe, revealed: controlledRe
     return (
         <div className="relative w-full">
             <motion.div
+                data-tour-id="swipe-actions"
                 drag
                 dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
                 dragElastic={0.7}
@@ -204,7 +204,7 @@ export default function VocabCard({ card, index, onSwipe, revealed: controlledRe
                             </div>
                         ) : !revealed ? (
                             <div className="space-y-2">
-                                <button onClick={handleReveal} className="w-full px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 hover:bg-slate-600 transition-colors active:scale-95 flex items-center justify-center gap-2">
+                                <button data-tour-id="reveal-button" onClick={handleReveal} className="w-full px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 hover:bg-slate-600 transition-colors active:scale-95 flex items-center justify-center gap-2">
                                     <Eye className="w-4 h-4 text-slate-300" />
                                     <p className="text-sm text-slate-300 font-medium">Nhấn để xem nghĩa</p>
                                 </button>

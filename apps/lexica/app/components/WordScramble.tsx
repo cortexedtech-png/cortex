@@ -189,7 +189,7 @@ export default function WordScramble({ learnedWordIds, onClose }: WordScramblePr
 
     const handleKeyboardLetter = (key: string) => {
         // Find first unselected letter that matches the key
-        const matchingIndex = scrambledLetters.findIndex((letter, index) => 
+        const matchingIndex = scrambledLetters.findIndex((letter, index) =>
             letter.toLowerCase() === key && !selectedIndices.includes(index)
         );
 
@@ -354,8 +354,8 @@ export default function WordScramble({ learnedWordIds, onClose }: WordScramblePr
                                         whileTap={{ scale: isSelected ? 1 : 0.95 }}
                                         disabled={isSelected}
                                         className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-lg border-2 font-bold text-xl transition-all ${isSelected
-                                                ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400 opacity-50'
-                                                : 'bg-slate-700 border-slate-600 text-white hover:border-cyan-500'
+                                            ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400 opacity-50'
+                                            : 'bg-slate-700 border-slate-600 text-white hover:border-cyan-500'
                                             }`}
                                     >
                                         {letter.toUpperCase()}

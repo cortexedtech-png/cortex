@@ -77,3 +77,124 @@ svg:focus,
 svg *:focus {
   outline: none !important;
 }
+
+/* ===== DRIVER.JS TOUR STYLING ===== */
+
+/* Overlay */
+.driver-overlay {
+  background: rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Highlighted element */
+.driver-active-element {
+  outline: 3px solid #22d3ee !important;
+  outline-offset: 6px !important;
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.3), 0 0 20px rgba(34, 211, 238, 0.4) !important;
+}
+
+/* Popover */
+.driver-popover {
+  background: #1e293b !important;
+  border: 2px solid #334155 !important;
+  border-radius: 16px !important;
+  max-width: 400px !important;
+}
+
+.driver-popover-arrow {
+  display: none !important;
+}
+
+.driver-popover-title {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #06b6d4 !important;
+  padding: 20px 24px 12px !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+.driver-popover-description {
+  font-size: 14px !important;
+  color: #cbd5e1 !important;
+  padding: 16px 24px !important;
+}
+
+.driver-popover-description strong {
+  color: #06b6d4 !important;
+}
+
+.driver-popover-progress-text {
+  font-size: 12px !important;
+  color: #64748b !important;
+  padding: 0 24px 16px !important;
+}
+
+.driver-popover-footer {
+  padding: 16px 24px 20px !important;
+  border-top: 1px solid #334155 !important;
+  gap: 12px !important;
+}
+
+/* Buttons - Simple & Clean */
+.driver-popover-prev-btn,
+.driver-popover-next-btn {
+  padding: 10px 24px !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.driver-popover-prev-btn {
+  background: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+.driver-popover-prev-btn:hover {
+  background: #475569 !important;
+}
+
+.driver-popover-next-btn {
+  background: #06b6d4 !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.driver-popover-next-btn:hover {
+  background: #22d3ee !important;
+}
+
+.driver-popover-close-btn {
+  width: 32px !important;
+  height: 32px !important;
+  background: #334155 !important;
+  color: #94a3b8 !important;
+  border-radius: 8px !important;
+  font-size: 20px !important;
+}
+
+.driver-popover-close-btn:hover {
+  background: #475569 !important;
+}
+
+@media (max-width: 640px) {
+  .driver-popover {
+    max-width: calc(100vw - 32px) !important;
+  }
+  .driver-popover-title {
+    font-size: 16px !important;
+    padding: 16px 20px 10px !important;
+  }
+  .driver-popover-description {
+    font-size: 13px !important;
+    padding: 12px 20px !important;
+  }
+  .driver-popover-footer {
+    padding: 12px 20px 16px !important;
+  }
+  .driver-popover-prev-btn,
+  .driver-popover-next-btn {
+    font-size: 13px !important;
+    padding: 8px 16px !important;
+  }
+}

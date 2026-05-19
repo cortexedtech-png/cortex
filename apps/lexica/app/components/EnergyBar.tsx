@@ -22,7 +22,7 @@ export default function EnergyBar({ currentEnergy, maxEnergy, streak = 0 }: Ener
     if (!mounted) return null;
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-50 px-4 pt-safe">
+        <div className="fixed top-0 left-0 right-0 z-50 px-4 pt-safe" data-tour-id="energy-bar">
             <div className="mx-auto max-w-md pt-4 pb-2">
                 {/* Energy Header */}
                 <div className="flex items-center justify-between mb-2">
@@ -35,7 +35,7 @@ export default function EnergyBar({ currentEnergy, maxEnergy, streak = 0 }: Ener
                     <div className="flex items-center gap-3">
                         {/* Streak Badge */}
                         {streak > 0 && (
-                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-bold ${streak >= 7 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-slate-700/60 text-slate-300 border border-slate-600/30'}`}>
+                            <div data-tour-id="streak-badge" className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-bold ${streak >= 7 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-slate-700/60 text-slate-300 border border-slate-600/30'}`}>
                                 <Flame className={`w-3.5 h-3.5 ${streak >= 7 ? 'text-cyan-400' : 'text-slate-400'}`} />
                                 {streak}
                             </div>

@@ -153,6 +153,7 @@ export default function LearnedPage() {
             {learnedCount >= 4 && (
                 <div className="max-w-5xl mx-auto mb-8">
                     <button
+                        data-tour-id="game-hub-button"
                         onClick={() => {
                             buttonPress();
                             setShowGameHub(true);
@@ -198,7 +199,7 @@ export default function LearnedPage() {
 
             {/* Stories Section */}
             {visibleStories.length > 0 && (
-                <div className="max-w-5xl mx-auto mb-8 bg-slate-800/30 border border-slate-700 rounded-xl p-6">
+                <div data-tour-id="story-mode-button" className="max-w-5xl mx-auto mb-8 bg-slate-800/30 border border-slate-700 rounded-xl p-6">
                     <div className="flex items-center gap-3 mb-6">
                         <BookMarked className="w-6 h-6 text-cyan-400" />
                         <h2 className="text-2xl font-bold text-white">Story Packs</h2>
