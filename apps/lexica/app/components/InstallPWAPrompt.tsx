@@ -16,7 +16,7 @@ const DISMISSED_KEY = 'lexica-install-prompt-dismissed';
  * - Only shows once (persisted in localStorage)
  */
 export default function InstallPWAPrompt() {
-    const { isInstallable, isIOS, isAndroid, isStandalone, promptInstall } = useInstallPrompt();
+    const { isInstallable, isIOS, isStandalone, promptInstall } = useInstallPrompt();
     const [showPrompt, setShowPrompt] = useState(false);
     const [showIOSInstructions, setShowIOSInstructions] = useState(false);
     const [isInstalling, setIsInstalling] = useState(false);
@@ -230,7 +230,7 @@ export default function InstallPWAPrompt() {
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-white font-medium text-sm mb-1.5">
-                                                Chọn <span className="text-cyan-400">"Add to Home Screen"</span>
+                                                Chọn <span className="text-cyan-400">&quot;Add to Home Screen&quot;</span>
                                             </p>
                                             <div className="flex items-center gap-2">
                                                 <div className="p-1.5 bg-slate-700 rounded">
@@ -250,7 +250,7 @@ export default function InstallPWAPrompt() {
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-white font-medium text-sm mb-1">
-                                                Nhấn <span className="text-cyan-400">"Add"</span>
+                                                Nhấn <span className="text-cyan-400">&quot;Add&quot;</span>
                                             </p>
                                             <span className="text-slate-400 text-xs">
                                                 App sẽ xuất hiện trên Home Screen

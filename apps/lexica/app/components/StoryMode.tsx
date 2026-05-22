@@ -40,7 +40,6 @@ export default function StoryMode({ storyId, part, onClose, onFinish, onNavigate
     const [showComprehensionQuiz, setShowComprehensionQuiz] = useState(false);
     const story = STORIES.find(s => s.id === storyId);
     const unlockedStories = useLexicaStore(state => state.unlockedStories);
-    const unlockedStoryPart1 = useLexicaStore(state => state.unlockedStoryPart1);
     const openStory = useLexicaStore(state => state.openStory);
 
     if (!story) return null;
@@ -61,7 +60,7 @@ export default function StoryMode({ storyId, part, onClose, onFinish, onNavigate
     const quizQuestions = isPart1Only ? story.part1Questions : story.fullStoryQuestions;
 
     // Handle quiz completion
-    const handleQuizComplete = (score: number, passed: boolean) => {
+    const handleQuizComplete = () => {
         setShowComprehensionQuiz(false);
 
         // Continue with original flow

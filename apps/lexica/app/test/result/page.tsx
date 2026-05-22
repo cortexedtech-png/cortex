@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 import { useLexicaStore } from '../../store/lexicaStore';
 import LevelTestResult from '../../components/LevelTestResult';
-import { DifficultyLevel } from '../../components/VocabCard';
+
 
 function TestResultContent() {
     const router = useRouter();

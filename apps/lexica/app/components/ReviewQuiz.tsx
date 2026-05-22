@@ -19,8 +19,10 @@ export default function ReviewQuiz({ card, onSwipe }: ReviewQuizProps) {
 
     const options = useMemo(() => {
         const others = VOCAB_DATABASE.filter(c => c.id !== card.id);
+        // eslint-disable-next-line react-hooks/purity
         const shuffled = [...others].sort(() => Math.random() - 0.5).slice(0, 3);
         const all = [card.translationHint, ...shuffled.map(c => c.translationHint)];
+        // eslint-disable-next-line react-hooks/purity
         return all.sort(() => Math.random() - 0.5);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [card.id]);

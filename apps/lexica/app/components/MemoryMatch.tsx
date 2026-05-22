@@ -31,13 +31,11 @@ export default function MemoryMatch({ learnedWordIds, onClose }: MemoryMatchProp
     const [matches, setMatches] = useState(0);
     const [time, setTime] = useState(0);
     const [isComplete, setIsComplete] = useState(false);
-    const [highScore, setHighScore] = useState<number | null>(null);
-
-    useEffect(() => {
+    const [highScore, setHighScore] = useState<number | null>(() => {
+        if (typeof window === 'undefined') return null;
         const saved = localStorage.getItem('memoryMatch_highScore');
-        if (saved) setHighScore(parseInt(saved));
-        initializeGame();
-    }, []);
+        return saved ? parseInt(saved) : null;
+    });
 
     useEffect(() => {
         if (isComplete) return;
@@ -86,6 +84,9 @@ export default function MemoryMatch({ learnedWordIds, onClose }: MemoryMatchProp
         setTime(0);
         setIsComplete(false);
     };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+    useEffect(() => { initializeGame(); }, []);
 
     const handleCardClick = (cardId: string) => {
         const card = cards.find(c => c.id === cardId);

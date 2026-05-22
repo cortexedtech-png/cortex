@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Grid3x3, Trophy, X, Sparkles } from 'lucide-react';
 import { useSoundEffects } from '../hooks/useSoundEffects';
@@ -28,13 +28,12 @@ export default function WordBingo({ learnedWordIds, onClose }: WordBingoProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [gameWon, setGameWon] = useState(false);
     const [gameOver, setGameOver] = useState(false);
-    const [highScore, setHighScore] = useState<number | null>(null);
-    const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
-
-    useEffect(() => {
+    const [highScore, setHighScore] = useState<number | null>(() => {
+        if (typeof window === 'undefined') return null;
         const saved = localStorage.getItem('wordBingo_highScore');
-        if (saved) setHighScore(parseInt(saved));
-    }, []);
+        return saved ? parseInt(saved) : null;
+    });
+    const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
     const initializeGrid = () => {
         // Get 9 random words for 3x3 grid
@@ -74,6 +73,7 @@ export default function WordBingo({ learnedWordIds, onClose }: WordBingoProps) {
 
         if (unmarked.length === 0) return;
 
+        // eslint-disable-next-line react-hooks/purity
         const randomCell = unmarked[Math.floor(Math.random() * unmarked.length)];
         setCurrentQuestion({
             word: randomCell.word,

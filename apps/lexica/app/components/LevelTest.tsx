@@ -125,7 +125,7 @@ interface LevelTestProps {
 }
 
 export default function LevelTest({ onComplete, onBack }: LevelTestProps) {
-    const { click, buttonPress, quizCorrect, quizWrong } = useSoundEffects();
+    const { click, quizCorrect, quizWrong } = useSoundEffects();
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<number[]>([]);
     const [selectedOption, setSelectedOption] = useState<number | null>(null);

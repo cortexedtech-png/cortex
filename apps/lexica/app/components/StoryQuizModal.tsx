@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Brain, CheckCircle, XCircle, Sparkles } from 'lucide-react';
+import { X, Brain, CheckCircle, XCircle } from 'lucide-react';
 import { STORIES } from '../data/stories';
 import { VOCAB_DATABASE } from '../data/vocabCards';
 import { useLexicaStore } from '../store/lexicaStore';
@@ -13,13 +13,6 @@ interface StoryQuizModalProps {
     part: 1 | 2; // Which part to unlock
     onClose: () => void;
     onSuccess?: (storyId: string, part: 1 | 2) => void; // Called when quiz is passed
-}
-
-interface QuizQuestion {
-    word: string;
-    wordVietnamese: string;
-    correctAnswer: string;
-    options: string[];
 }
 
 export default function StoryQuizModal({ storyId, part, onClose, onSuccess }: StoryQuizModalProps) {
@@ -39,6 +32,7 @@ export default function StoryQuizModal({ storyId, part, onClose, onSuccess }: St
         ? storyQuizAttempts[storyId]?.part1LastAttempt
         : storyQuizAttempts[storyId]?.part2LastAttempt;
     const cooldownRemaining = lastAttempt
+        // eslint-disable-next-line react-hooks/purity
         ? Math.max(0, 3600000 - (Date.now() - lastAttempt)) // 1 hour in ms
         : 0;
     const isOnCooldown = cooldownRemaining > 0;
@@ -59,6 +53,7 @@ export default function StoryQuizModal({ storyId, part, onClose, onSuccess }: St
         if (availableVocab.length < 3) return []; // Need at least 3 words
 
         // Generate 5 questions from learned words
+        // eslint-disable-next-line react-hooks/purity
         const shuffled = [...availableVocab].sort(() => Math.random() - 0.5);
         const selected = shuffled.slice(0, Math.min(5, shuffled.length));
 

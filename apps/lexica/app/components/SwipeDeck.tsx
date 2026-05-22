@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PartyPopper, Check, X, ArrowRight } from 'lucide-react';
+import { PartyPopper, Check, X } from 'lucide-react';
 import Link from 'next/link';
 import VocabCard from './VocabCard';
 import { useLexicaStore } from '../store/lexicaStore';

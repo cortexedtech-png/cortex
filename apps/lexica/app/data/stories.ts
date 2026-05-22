@@ -1,5 +1,4 @@
 import { DifficultyLevel } from '../components/VocabCard';
-import { VOCAB_DATABASE } from './vocabCards';
 
 export interface ComprehensionQuestion {
     question: string;
@@ -32,7 +31,6 @@ export interface Story {
     darkComedyLevel: 'medium' | 'high' | 'extreme';
 }
 
-const VOCAB_BY_ID = new Map(VOCAB_DATABASE.map(vocab => [vocab.id, vocab]));
 
 /**
  * Pre-generated absurd dark-comedy stories

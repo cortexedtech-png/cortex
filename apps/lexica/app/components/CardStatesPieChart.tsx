@@ -53,7 +53,9 @@ export default function CardStatesPieChart({ cardProgress, learnedWords }: CardS
     }
 
     // Custom label renderer - only show label if segment > 5%, positioned further out
-    const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+    const renderLabel = ({ cx, cy, midAngle, outerRadius, percent, name }: {
+        cx: number; cy: number; midAngle: number; outerRadius: number; percent: number; name: string;
+    }) => {
         // Only show label if percentage > 5%
         if (percent < 0.05) {
             return null;

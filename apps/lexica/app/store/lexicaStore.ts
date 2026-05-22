@@ -459,7 +459,7 @@ export const useLexicaStore = create<LexicaStore>()(
 
             // Load new deck
             loadNewDeck: () => {
-                const { userStats, cardProgress, selectedLevel, learnedWords, autoReviewInDeck, reviewCardsInjectedThisSession } = get();
+                const { userStats, cardProgress, selectedLevel, learnedWords } = get();
                 const learnedWordIds = Array.from(learnedWords);
 
                 // If any story pack is at 7-9/10, inject missing words regardless of ELO.

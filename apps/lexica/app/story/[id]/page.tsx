@@ -14,13 +14,10 @@ export default function StoryPage() {
     const part = (searchParams.get('part') || 'full') as 'part1' | 'part2' | 'full';
 
     const markStoryAsRead = useLexicaStore(state => state.markStoryAsRead);
-    const learnedWords = useLexicaStore(state => state.learnedWords);
     const unlockedStories = useLexicaStore(state => state.unlockedStories);
     const unlockedStoryPart1 = useLexicaStore(state => state.unlockedStoryPart1);
 
     const story = STORIES.find(s => s.id === storyId);
-    const learnedWordIds = Array.from(learnedWords);
-
     // Check if user has access to this story part
     useEffect(() => {
         if (!story) {

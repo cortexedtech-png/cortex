@@ -6,6 +6,8 @@ import { Shuffle, Trophy, X, RotateCcw, Lightbulb, SkipForward, Heart, Delete } 
 import { useSoundEffects } from '../hooks/useSoundEffects';
 import { VOCAB_DATABASE } from '../data/vocabCards';
 
+import { VocabCardData } from './VocabCard';
+
 interface WordScrambleProps {
     learnedWordIds: string[];
     onClose: () => void;
@@ -14,7 +16,7 @@ interface WordScrambleProps {
 export default function WordScramble({ learnedWordIds, onClose }: WordScrambleProps) {
     const { click, quizCorrect, quizWrong } = useSoundEffects();
 
-    const [currentCard, setCurrentCard] = useState<any>(null);
+    const [currentCard, setCurrentCard] = useState<Omit<VocabCardData, 'state'> | null>(null);
     const [scrambledLetters, setScrambledLetters] = useState<string[]>([]);
     const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
     const [score, setScore] = useState(0);
@@ -25,38 +27,15 @@ export default function WordScramble({ learnedWordIds, onClose }: WordScramblePr
     const [answered, setAnswered] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [gameOver, setGameOver] = useState(false);
-    const [highScore, setHighScore] = useState<number | null>(null);
+    const [highScore, setHighScore] = useState<number | null>(() => {
+        if (typeof window === 'undefined') return null;
+        const saved = localStorage.getItem('wordScramble_highScore');
+        return saved ? parseInt(saved) : null;
+    });
     const [showHint, setShowHint] = useState(false);
 
-    useEffect(() => {
-        const saved = localStorage.getItem('wordScramble_highScore');
-        if (saved) setHighScore(parseInt(saved));
-    }, []);
-
     // Keyboard event handler
-    useEffect(() => {
-        if (!isPlaying || gameOver) return;
-
-        const handleKeyPress = (e: KeyboardEvent) => {
-            const key = e.key.toLowerCase();
-
-            // Handle backspace/delete - remove last selected letter
-            if (key === 'backspace' || key === 'delete') {
-                e.preventDefault();
-                handleClearLast();
-                return;
-            }
-
-            // Handle letter keys - select matching unselected letter
-            if (key.length === 1 && /[a-z]/.test(key)) {
-                e.preventDefault();
-                handleKeyboardLetter(key);
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyPress);
-        return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [isPlaying, gameOver, selectedIndices, scrambledLetters]);
+    // (moved below handleClearLast/handleKeyboardLetter declarations to avoid before-declaration errors)
 
     const scrambleWord = (word: string): string[] => {
         const letters = word.split('');
@@ -197,6 +176,32 @@ export default function WordScramble({ learnedWordIds, onClose }: WordScramblePr
             handleLetterClick(matchingIndex);
         }
     };
+
+    // Keyboard event handler (after handleClearLast and handleKeyboardLetter are declared)
+    useEffect(() => {
+        if (!isPlaying || gameOver) return;
+
+        const handleKeyPress = (e: KeyboardEvent) => {
+            const key = e.key.toLowerCase();
+
+            // Handle backspace/delete - remove last selected letter
+            if (key === 'backspace' || key === 'delete') {
+                e.preventDefault();
+                handleClearLast();
+                return;
+            }
+
+            // Handle letter keys - select matching unselected letter
+            if (key.length === 1 && /[a-z]/.test(key)) {
+                e.preventDefault();
+                handleKeyboardLetter(key);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isPlaying, gameOver, selectedIndices, scrambledLetters]);
 
     const getUserWord = () => {
         return selectedIndices.map(i => scrambledLetters[i]).join('');

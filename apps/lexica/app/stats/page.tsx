@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, BookOpen, Target, Flame, Trophy, TrendingUp, Calendar, PieChart as PieChartIcon, MousePointerClick, Volume2, VolumeX, Hand, Mic, RotateCcw, Trash2, X } from 'lucide-react';
+import { ArrowLeft, BookOpen, Target, Flame, Trophy, TrendingUp, Calendar, PieChart as PieChartIcon, MousePointerClick, Volume2, VolumeX, Hand, Mic, RotateCcw, Trash2 } from 'lucide-react';
 import CortexSection from '../components/CortexSection';
 import { useLexicaStore } from '../store/lexicaStore';
 import { getProgressStats } from '../lib/eloAlgorithm';
@@ -22,7 +22,6 @@ function StatsPageContent() {
     const highestElo = useLexicaStore(state => state.highestElo);
     const cardProgress = useLexicaStore(state => state.cardProgress);
     const studyHistory = useLexicaStore(state => state.studyHistory);
-    const getStudyStats = useLexicaStore(state => state.getStudyStats);
     const soundEnabled = useLexicaStore(state => state.soundEnabled);
     const toggleSound = useLexicaStore(state => state.toggleSound);
     const swipeMode = useLexicaStore(state => state.swipeMode);
@@ -35,7 +34,6 @@ function StatsPageContent() {
     const [showResetDialog, setShowResetDialog] = useState(false);
 
     const progressStats = getProgressStats(cardProgress);
-    const studyStats = getStudyStats();
     const accuracy = userStats.totalSwipes > 0
         ? Math.round((userStats.correctSwipes / userStats.totalSwipes) * 100)
         : 0;

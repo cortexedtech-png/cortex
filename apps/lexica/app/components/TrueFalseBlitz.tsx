@@ -27,13 +27,12 @@ export default function TrueFalseBlitz({ learnedWordIds, onClose }: TrueFalseBli
     const [time, setTime] = useState(60);
     const [isPlaying, setIsPlaying] = useState(false);
     const [gameOver, setGameOver] = useState(false);
-    const [highScore, setHighScore] = useState<number | null>(null);
-    const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
-
-    useEffect(() => {
+    const [highScore, setHighScore] = useState<number | null>(() => {
+        if (typeof window === 'undefined') return null;
         const saved = localStorage.getItem('trueFalseBlitz_highScore');
-        if (saved) setHighScore(parseInt(saved));
-    }, []);
+        return saved ? parseInt(saved) : null;
+    });
+    const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
     useEffect(() => {
         if (!isPlaying || gameOver) return;
@@ -278,7 +277,7 @@ export default function TrueFalseBlitz({ learnedWordIds, onClose }: TrueFalseBli
                         className="text-center space-y-4"
                     >
                         <Trophy className="w-16 h-16 text-cyan-400 mx-auto" />
-                        <h3 className="text-2xl font-bold text-white">Time's Up!</h3>
+                        <h3 className="text-2xl font-bold text-white">Time&apos;s Up!</h3>
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="p-4 bg-slate-700/50 rounded-lg border border-slate-600">

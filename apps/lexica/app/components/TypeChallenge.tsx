@@ -6,6 +6,8 @@ import { Keyboard, Trophy, X, Clock, Zap } from 'lucide-react';
 import { useSoundEffects } from '../hooks/useSoundEffects';
 import { VOCAB_DATABASE } from '../data/vocabCards';
 
+import { VocabCardData } from './VocabCard';
+
 interface TypeChallengeProps {
     learnedWordIds: string[];
     onClose: () => void;
@@ -15,7 +17,7 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
     const { click, quizCorrect, quizWrong } = useSoundEffects();
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const [currentCard, setCurrentCard] = useState<any>(null);
+    const [currentCard, setCurrentCard] = useState<Omit<VocabCardData, 'state'> | null>(null);
     const [input, setInput] = useState('');
     const [score, setScore] = useState(0);
     const [streak, setStreak] = useState(0);
@@ -24,13 +26,12 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
     const [time, setTime] = useState(60);
     const [isPlaying, setIsPlaying] = useState(false);
     const [gameOver, setGameOver] = useState(false);
-    const [highScore, setHighScore] = useState<number | null>(null);
-    const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
-
-    useEffect(() => {
+    const [highScore, setHighScore] = useState<number | null>(() => {
+        if (typeof window === 'undefined') return null;
         const saved = localStorage.getItem('typeChallenge_highScore');
-        if (saved) setHighScore(parseInt(saved));
-    }, []);
+        return saved ? parseInt(saved) : null;
+    });
+    const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
     useEffect(() => {
         if (!isPlaying || gameOver) return;
@@ -205,7 +206,7 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
                             </p>
                             {currentCard.example && (
                                 <p className="text-xs sm:text-sm text-slate-400 italic">
-                                    "{currentCard.example}"
+                                    &quot;{currentCard.example}&quot;
                                 </p>
                             )}
                         </div>
@@ -255,7 +256,7 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
                         className="text-center space-y-4"
                     >
                         <Trophy className="w-16 h-16 text-cyan-400 mx-auto" />
-                        <h3 className="text-2xl font-bold text-white">Time's Up!</h3>
+                        <h3 className="text-2xl font-bold text-white">Time&apos;s Up!</h3>
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="p-4 bg-slate-700/50 rounded-lg border border-slate-600">

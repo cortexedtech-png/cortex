@@ -172,7 +172,7 @@ function QuestionCard({
     streak: number;
     onAnswer: (correct: boolean) => void;
 }) {
-    const { click, quizCorrect, quizWrong } = useSoundEffects();
+    const { click } = useSoundEffects();
     const [selected, setSelected] = useState<string | null>(null);
     const [answered, setAnswered] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
@@ -229,7 +229,6 @@ function QuestionCard({
     };
 
     const timerPct = (timeLeft / TIMER_SECONDS) * 100;
-    const timerColor = 'bg-cyan-400';
     const promptBorder = answered
         ? 'bg-white/[0.03] border-white/30'
         : 'bg-white/[0.02] border-white/20';

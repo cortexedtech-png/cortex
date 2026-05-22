@@ -20,7 +20,7 @@ interface CortexProfile {
 export default function CortexWidget() {
     const [profile, setProfile] = useState<CortexProfile | null>(null);
     const [isOpen, setIsOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [, setLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
 
     const { syncAllToCortex } = useLexicaStore();

@@ -2,7 +2,6 @@
 
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
-import { useLexicaStore } from '../../../store/lexicaStore';
 import StoryQuizModal from '../../../components/StoryQuizModal';
 import { STORIES } from '../../../data/stories';
 
@@ -15,8 +14,6 @@ function UnlockQuizContent() {
     const part = parseInt(searchParams.get('part') || '1') as 1 | 2;
 
     const story = STORIES.find(s => s.id === storyId);
-    const learnedWords = useLexicaStore(state => state.learnedWords);
-
     // Check if story exists
     useEffect(() => {
         if (!story) {

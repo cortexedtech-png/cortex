@@ -22,13 +22,9 @@ export default function AccuracyChart({ studyHistory }: AccuracyChartProps) {
         const lastDates = dates.slice(-numDays);
 
         const data = [];
-        let totalCorrect = 0;
-        let totalSwipes = 0;
 
         for (const date of lastDates) {
             const entry = studyHistory[date];
-            totalCorrect += entry.correct;
-            totalSwipes += entry.swipes;
 
             const accuracy = entry.swipes > 0 ? Math.round((entry.correct / entry.swipes) * 100) : 0;
             const dateObj = new Date(date + 'T00:00:00');

@@ -34,16 +34,16 @@ export function useInstallPrompt(): InstallPromptState {
     useEffect(() => {
         // Detect iOS
         const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        setIsIOS(iOS);
-
         // Detect Android
         const android = /Android/.test(navigator.userAgent);
-        setIsAndroid(android);
-
         // Check if already installed (standalone mode)
         const standalone = window.matchMedia('(display-mode: standalone)').matches
-            || (window.navigator as any).standalone === true
+            || (window.navigator as { standalone?: boolean }).standalone === true
             || document.referrer.includes('android-app://');
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsIOS(iOS);
+        setIsAndroid(android);
         setIsStandalone(standalone);
 
         // Capture beforeinstallprompt event (Android/Desktop Chrome/Edge)
