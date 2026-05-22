@@ -131,7 +131,7 @@ function WordDetailModal({ card, onClose }: { card: CardWithProgress; onClose: (
                 <div className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 mb-5">
                     <p className="text-xs text-slate-500 uppercase tracking-wider font-medium mb-2">Ví dụ</p>
                     <p className="text-slate-200 text-sm leading-relaxed italic">
-                        &ldquo;{highlightWord(card.scenario, card.word)}&rdquo;
+                        &ldquo;{highlightWord(card.scenario ?? '', card.word)}&rdquo;
                     </p>
                 </div>
 
