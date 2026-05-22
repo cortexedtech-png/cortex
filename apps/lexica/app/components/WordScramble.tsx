@@ -80,6 +80,7 @@ export default function WordScramble({ learnedWordIds, onClose }: WordScramblePr
         // Check if word is complete
         if (newSelected.length === scrambledLetters.length) {
             const userWord = newSelected.map(i => scrambledLetters[i]).join('');
+            if (!currentCard) return;
             const correctWord = currentCard.word;
 
             if (userWord.toLowerCase() === correctWord.toLowerCase()) {

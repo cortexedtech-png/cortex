@@ -67,7 +67,7 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
         setTime(60);
         setInput('');
         setFeedback(null);
-        setCurrentCard(getRandomWord());
+        setCurrentCard(getRandomWord() ?? null);
         setTimeout(() => inputRef.current?.focus(), 100);
     };
 
@@ -92,7 +92,7 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
             setTimeout(() => {
                 setInput('');
                 setFeedback(null);
-                setCurrentCard(getRandomWord());
+                setCurrentCard(getRandomWord() ?? null);
                 inputRef.current?.focus();
             }, 500);
         } else {
@@ -103,7 +103,7 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
             setTimeout(() => {
                 setFeedback(null);
                 setInput('');
-                setCurrentCard(getRandomWord());
+                setCurrentCard(getRandomWord() ?? null);
                 inputRef.current?.focus();
             }, 1000);
         }
@@ -204,11 +204,6 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
                             <p className="text-2xl sm:text-3xl font-bold text-white mb-4">
                                 {currentCard.translationHint}
                             </p>
-                            {currentCard.example && (
-                                <p className="text-xs sm:text-sm text-slate-400 italic">
-                                    &quot;{currentCard.example}&quot;
-                                </p>
-                            )}
                         </div>
 
                         {/* Input */}

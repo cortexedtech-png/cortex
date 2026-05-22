@@ -97,7 +97,7 @@ function buildQuestions(dueCardIds: string[]): Question[] {
         if (type === 'fill-in') {
             return {
                 ...base, type,
-                prompt: blank(card.scenario, card.word),
+                prompt: blank(card.scenario ?? card.word, card.word),
                 answer: card.word.toUpperCase(),
                 options: buildOptions(card.word.toUpperCase(), wordPool.map(w => w.toUpperCase())),
             };
@@ -453,7 +453,7 @@ function ResultScreen({
                                         <>
                                             <p className="text-cyan-400 text-xs pl-5">{card.translationHint}</p>
                                             <p className="text-slate-500 text-xs italic pl-5 leading-snug">
-                                                &ldquo;{highlightWord(card.scenario, r.word)}&rdquo;
+                                                &ldquo;{highlightWord(card.scenario ?? card.word, r.word)}&rdquo;
                                             </p>
                                         </>
                                     )}
