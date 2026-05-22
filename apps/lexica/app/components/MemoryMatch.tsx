@@ -203,10 +203,10 @@ export default function MemoryMatch({ learnedWordIds, onClose }: MemoryMatchProp
                             whileHover={{ scale: card.isMatched ? 1 : 1.05 }}
                             whileTap={{ scale: card.isMatched ? 1 : 0.95 }}
                             className={`aspect-square rounded-lg border-2 p-2 sm:p-3 flex items-center justify-center text-center transition-all ${card.isMatched
-                                    ? 'bg-cyan-500/20 border-cyan-500 opacity-50'
-                                    : card.isFlipped
-                                        ? 'bg-slate-700 border-slate-600'
-                                        : 'bg-slate-800 border-slate-700 hover:border-slate-600'
+                                ? 'bg-cyan-500/20 border-cyan-500 opacity-50'
+                                : card.isFlipped
+                                    ? 'bg-slate-700 border-slate-600'
+                                    : 'bg-slate-800 border-slate-700 hover:border-slate-600'
                                 }`}
                         >
                             {card.isFlipped || card.isMatched ? (

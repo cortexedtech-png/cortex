@@ -200,7 +200,7 @@ export default function WordScramble({ learnedWordIds, onClose }: WordScramblePr
 
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isPlaying, gameOver, selectedIndices, scrambledLetters]);
 
     const getUserWord = () => {
