@@ -146,28 +146,28 @@ function WordDetailModal({ card, onClose }: { card: CardWithProgress; onClose: (
 
                 {/* Deep Dive Labs */}
                 {(card.surgeryModule || card.upgradeModule) && (
-                    <div className="mt-8 pt-6 border-t border-slate-800">
-                        <div className="flex items-center gap-2 text-cyan-400 font-mono text-[10px] tracking-widest uppercase mb-4">
-                            <FlaskConical className="w-3 h-3" />
+                    <div className="mt-8 pt-6 border-t border-slate-700">
+                        <div className="flex items-center gap-2 text-white font-bold text-xs uppercase mb-4">
+                            <FlaskConical className="w-4 h-4 text-cyan-400" />
                             Deep Dive Training
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             {card.surgeryModule && (
                                 <button
                                     onClick={() => setLabMode('surgery')}
-                                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all group"
+                                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-cyan-500/20 border-2 border-cyan-500/50 hover:bg-cyan-500/30 hover:border-cyan-400 transition-all group"
                                 >
-                                    <Scissors className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
-                                    <span className="text-[10px] font-bold text-cyan-300 uppercase tracking-tight">Surgery Lab</span>
+                                    <Scissors className="w-5 h-5 text-cyan-300 group-hover:scale-110 transition-transform" />
+                                    <span className="text-xs font-bold text-cyan-200 uppercase tracking-tight">Surgery Lab</span>
                                 </button>
                             )}
                             {card.upgradeModule && (
                                 <button
                                     onClick={() => setLabMode('upgrade')}
-                                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all group"
+                                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-amber-500/20 border-2 border-amber-500/50 hover:bg-amber-500/30 hover:border-amber-400 transition-all group"
                                 >
-                                    <TrendingUp className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
-                                    <span className="text-[10px] font-bold text-amber-300 uppercase tracking-tight">Upgrade Lab</span>
+                                    <TrendingUp className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform" />
+                                    <span className="text-xs font-bold text-amber-200 uppercase tracking-tight">Upgrade Lab</span>
                                 </button>
                             )}
                         </div>

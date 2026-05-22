@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ExternalLink, BookOpen, Trophy, Volume2, ArrowRight } from 'lucide-react';
+import { X, BookOpen, Trophy, Volume2, ArrowRight } from 'lucide-react';
 import { STORIES, parseStoryContentWithIds } from '../data/stories';
 import { VOCAB_DATABASE } from '../data/vocabCards';
-import { analytics } from '../lib/analytics';
 import { useLexicaStore } from '../store/lexicaStore';
 import StoryComprehensionQuiz from './StoryComprehensionQuiz';
 import { useSoundEffects } from '../hooks/useSoundEffects';
@@ -241,73 +240,30 @@ export default function StoryMode({ storyId, part, onClose, onFinish, onNavigate
                         </motion.div>
                     )}
 
-                    {/* Full Story Completion CTA (only show if reading full story and scrolled to end) */}
+                    {/* Full Story Completion (only show if reading full story and scrolled to end) */}
                     {!isPart1Only && hasScrolledToEnd && (
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4 }}
-                            className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 border-2 border-cyan-500/50 rounded-2xl p-6 space-y-4"
+                            className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4"
                         >
-                            <div className="text-center space-y-2">
-                                <h3 className="text-xl font-bold text-white">
-                                    🎉 Hoàn thành câu chuyện!
-                                </h3>
-                                <p className="text-slate-300 text-sm">
-                                    Hãy làm quiz để test comprehension và vocabulary của bạn
-                                </p>
+                            <div className="flex items-center justify-between gap-4">
+                                <div>
+                                    <h3 className="text-sm font-semibold text-white mb-0.5">Hoàn thành câu chuyện</h3>
+                                    <p className="text-xs text-slate-400">Làm quiz để kiểm tra comprehension của bạn</p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        buttonPress();
+                                        setShowComprehensionQuiz(true);
+                                    }}
+                                    className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 hover:border-cyan-500/50 text-cyan-400 rounded-lg text-sm font-bold transition-all active:scale-95"
+                                >
+                                    <span>Làm Quiz</span>
+                                    <ArrowRight className="w-4 h-4" />
+                                </button>
                             </div>
-
-                            <button
-                                onClick={() => {
-                                    buttonPress();
-                                    setShowComprehensionQuiz(true);
-                                }}
-                                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold py-4 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
-                            >
-                                <span>Làm Comprehension Quiz</span>
-                                <ArrowRight className="w-5 h-5" />
-                            </button>
-                        </motion.div>
-                    )}
-
-                    {/* ORATIO Funnel CTA (only show if reading full story) */}
-                    {!isPart1Only && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{
-                                opacity: hasScrolledToEnd ? 1 : 0.3,
-                                scale: hasScrolledToEnd ? 1 : 0.95,
-                            }}
-                            transition={{ duration: 0.5 }}
-                            className="bg-cyan-500/10 border-2 border-cyan-500/50 rounded-2xl p-6 space-y-4"
-                        >
-                            <div className="text-center space-y-2">
-                                <h3 className="text-xl lg:text-2xl font-bold text-white">
-                                    Vocabulary is dead until spoken.
-                                </h3>
-                                <p className="text-slate-300 text-sm lg:text-base">
-                                    Hãy lấy câu chuyện vô lý này và tranh luận nó với một người thật trên ORATIO ngay bây giờ.
-                                </p>
-                            </div>
-
-                            <a
-                                href="https://oratio-new.vercel.app/"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={() => {
-                                    buttonPress();
-                                    analytics.oratioCTAClick(storyId);
-                                }}
-                                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold text-center py-4 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 group"
-                            >
-                                <span className="text-lg">Thử ORATIO miễn phí</span>
-                                <ExternalLink className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                            </a>
-
-                            <p className="text-center text-xs text-slate-500">
-                                100% miễn phí • Luyện speaking IELTS với người thật • Không quảng cáo
-                            </p>
                         </motion.div>
                     )}
 

@@ -9,6 +9,7 @@ import ReviewQuiz from './ReviewQuiz';
 
 export type CardState = 'seed' | 'sprout' | 'gold' | 'mastered';
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type UserArchetype = 'casual' | 'tech' | 'business' | 'student';
 
 export interface VocabCardData {
     id: string;
@@ -16,7 +17,10 @@ export interface VocabCardData {
     ipa?: string;
     elo: number;
     level: DifficultyLevel;
-    scenario: string;
+    // OLD FORMAT (deprecated): Single scenario string
+    scenario?: string;
+    // NEW FORMAT: Multiple scenarios by user archetype
+    scenarios?: Record<UserArchetype, string>;
     translationHint: string;
     state: CardState;
     isBossCard?: boolean;
@@ -53,6 +57,7 @@ export default function VocabCard({ card, index, onSwipe, revealed: controlledRe
     const swipeMode = useLexicaStore(state => state.swipeMode);
     const cardProgress = useLexicaStore(state => state.cardProgress[card.id]);
     const markAsMastered = useLexicaStore(state => state.markAsMastered);
+    const userArchetype = useLexicaStore(state => state.userArchetype);
 
     const revealed = controlledRevealed !== undefined ? controlledRevealed : internalRevealed;
     const handleReveal = onReveal ?? (() => setInternalRevealed(true));
@@ -60,6 +65,13 @@ export default function VocabCard({ card, index, onSwipe, revealed: controlledRe
     const isBossCard = card.isBossCard || false;
     const isVoiceSwipeRequired = isBossCard || (swipeMode === 'voice' && index === 0);
     const isReviewCard = Boolean(cardProgress);
+
+    // Personalized scenario selection with fallback
+    const displayScenario =
+        (card.scenarios && userArchetype && card.scenarios[userArchetype]) ||
+        card.scenario ||
+        (card.scenarios && card.scenarios.casual) ||
+        'Scenario not available';
 
     const handleMarkAsMastered = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -124,7 +136,7 @@ export default function VocabCard({ card, index, onSwipe, revealed: controlledRe
                 style={{ userSelect: 'none', zIndex: 100 - index }}
             >
                 <div
-                    className="relative mx-4 h-100 rounded-2xl bg-slate-800 p-6 border border-slate-700 overflow-hidden"
+                    className="relative mx-2 sm:mx-4 h-[450px] sm:h-100 rounded-2xl bg-slate-800 p-4 sm:p-6 border border-slate-700 overflow-hidden"
                     style={{ boxShadow: index > 0 ? '0 -4px 12px rgba(0,0,0,0.3)' : 'none' }}
                 >
                     {/* Normal content */}
@@ -149,10 +161,10 @@ export default function VocabCard({ card, index, onSwipe, revealed: controlledRe
                         </div>
                     )}
 
-                    <div className={`${isBossCard ? 'mt-16' : 'mt-12'} mb-8 text-center`}>
-                        <p className="text-lg text-slate-200 leading-relaxed">{card.scenario}</p>
+                    <div className={`${isBossCard ? 'mt-14 sm:mt-16' : 'mt-10 sm:mt-12'} mb-6 sm:mb-8 text-center`}>
+                        <p className="text-base sm:text-lg text-slate-200 leading-relaxed">{displayScenario}</p>
                     </div>
-                    <div className="absolute bottom-6 left-6 right-6">
+                    <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
                         {isVoiceSwipeRequired ? (
                             /* Voice mode: word info always visible + mic controls */
                             <div className="space-y-2">

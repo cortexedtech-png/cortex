@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, X, Zap, Mic, BookOpen, Trophy, Sprout, Leaf, Sparkles, Flame } from 'lucide-react';
+import { ChevronRight, ChevronLeft, X, Zap, Mic, BookOpen, Trophy, Sprout, Leaf, Sparkles, Flame, User, Briefcase, Laptop, GraduationCap } from 'lucide-react';
 import { useSoundEffects } from '../hooks/useSoundEffects';
+import { useLexicaStore } from '../store/lexicaStore';
+import type { UserArchetype } from './VocabCard';
 
 interface OnboardingModalProps {
     onComplete: () => void;
@@ -17,6 +19,15 @@ const STEPS = [
         title: 'Chào mừng đến LEXICA',
         body: 'LEXICA giúp bạn học từ vựng tiếng Anh theo cách tốt nhất: học bằng ngữ cảnh thực tế, ôn tập đúng lúc trước khi quên.',
         detail: 'Mỗi ngày bạn có 30 năng lượng ⚡. Hết năng lượng → nghỉ ngơi → hôm sau học tiếp.',
+    },
+    {
+        icon: User,
+        iconColor: 'text-purple-400',
+        iconBg: 'bg-purple-500/15 border-purple-500/30',
+        title: 'Chọn ngữ cảnh học phù hợp',
+        body: 'Bạn muốn học từ vựng trong ngữ cảnh nào? Điều này giúp LEXICA cá nhân hóa các tình huống thực tế phù hợp với cuộc sống của bạn.',
+        detail: null,
+        isPersonaSelection: true,
     },
     {
         icon: BookOpen,
@@ -71,16 +82,66 @@ const STEPS = [
     },
 ];
 
+const PERSONA_OPTIONS: Array<{
+    type: UserArchetype;
+    icon: typeof User;
+    label: string;
+    description: string;
+    color: string;
+    bgColor: string;
+}> = [
+        {
+            type: 'casual',
+            icon: User,
+            label: 'Người học thường',
+            description: 'Tình huống hàng ngày, giao tiếp đời sống',
+            color: 'text-cyan-400',
+            bgColor: 'border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20',
+        },
+        {
+            type: 'tech',
+            icon: Laptop,
+            label: 'Lập trình viên / Tech',
+            description: 'Ngữ cảnh công nghệ, startup, lập trình',
+            color: 'text-purple-400',
+            bgColor: 'border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20',
+        },
+        {
+            type: 'business',
+            icon: Briefcase,
+            label: 'Doanh nghiệp / Chuyên nghiệp',
+            description: 'Môi trường công sở, kinh doanh, thương mại',
+            color: 'text-amber-400',
+            bgColor: 'border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20',
+        },
+        {
+            type: 'student',
+            icon: GraduationCap,
+            label: 'Học sinh / Sinh viên',
+            description: 'Trường học, kỳ thi, học thuật',
+            color: 'text-emerald-400',
+            bgColor: 'border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20',
+        },
+    ];
+
 export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
     const [step, setStep] = useState(0);
     const [direction, setDirection] = useState(1);
+    const [selectedPersona, setSelectedPersona] = useState<UserArchetype | null>(null);
     const { click } = useSoundEffects();
+    const setUserArchetype = useLexicaStore(state => state.setUserArchetype);
 
     const currentStep = STEPS[step];
     const Icon = currentStep.icon;
     const isLast = step === STEPS.length - 1;
+    const isPersonaStep = 'isPersonaSelection' in currentStep && currentStep.isPersonaSelection;
 
     const goNext = () => {
+        // If on persona selection step, save the selection before proceeding
+        if (isPersonaStep && selectedPersona) {
+            setUserArchetype(selectedPersona);
+        }
+
         if (isLast) { onComplete(); return; }
         setDirection(1);
         setStep(s => s + 1);
@@ -150,7 +211,40 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
                         {/* Body */}
                         <p className="text-slate-300 text-sm leading-relaxed">{currentStep.body}</p>
 
-                        {/* Swipe cards (step 2 only) */}
+                        {/* Persona Selection (step 2) */}
+                        {isPersonaStep && (
+                            <div className="space-y-2.5 mt-4">
+                                {PERSONA_OPTIONS.map((persona) => {
+                                    const PersonaIcon = persona.icon;
+                                    const isSelected = selectedPersona === persona.type;
+                                    return (
+                                        <button
+                                            key={persona.type}
+                                            onClick={() => {
+                                                click();
+                                                setSelectedPersona(persona.type);
+                                            }}
+                                            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all ${isSelected ? persona.bgColor + ' ring-2 ring-offset-2 ring-offset-slate-800' : 'border-slate-600 bg-slate-700/30 hover:bg-slate-700/50'}`}
+                                        >
+                                            <div className={`w-10 h-10 rounded-lg ${isSelected ? persona.bgColor : 'bg-slate-600/50'} flex items-center justify-center shrink-0`}>
+                                                <PersonaIcon className={`w-5 h-5 ${isSelected ? persona.color : 'text-slate-400'}`} />
+                                            </div>
+                                            <div className="text-left flex-1">
+                                                <p className={`font-semibold text-sm ${isSelected ? 'text-white' : 'text-slate-200'}`}>{persona.label}</p>
+                                                <p className={`text-xs mt-0.5 ${isSelected ? persona.color : 'text-slate-400'}`}>{persona.description}</p>
+                                            </div>
+                                            {isSelected && (
+                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${persona.color}`}>
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-current"></div>
+                                                </div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* Swipe cards (step 3 only) */}
                         {'cards' in currentStep && currentStep.cards && (
                             <div className="space-y-2 mt-2">
                                 {currentStep.cards.map(c => (
@@ -192,7 +286,8 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
                             click();
                             goNext();
                         }}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold text-sm transition-colors active:scale-95"
+                        disabled={isPersonaStep && !selectedPersona}
+                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold text-sm transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-cyan-500"
                     >
                         {isLast ? 'Bắt đầu học!' : 'Tiếp theo'}
                         {!isLast && <ChevronRight className="w-4 h-4" />}

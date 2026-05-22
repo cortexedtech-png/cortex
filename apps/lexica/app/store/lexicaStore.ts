@@ -1,7 +1,7 @@
 import { analytics } from '../lib/analytics';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { VocabCardData, DifficultyLevel } from '../components/VocabCard';
+import { VocabCardData, DifficultyLevel, UserArchetype } from '../components/VocabCard';
 import { UserStats, UserCardProgress, recordSwipe, generateInitialDeck, updateCardProgress } from '../lib/eloAlgorithm';
 import { getStoryCatchUpWordIds, STORIES, canUnlockPart1Naturally, canUnlockPart2Naturally } from '../data/stories';
 
@@ -89,6 +89,19 @@ interface LexicaStore {
     // Onboarding
     hasSeenOnboarding: boolean;
     completeOnboarding: () => void;
+
+    // Personalization (NEW)
+    userArchetype: UserArchetype | null; // User's selected context/persona
+    setUserArchetype: (type: UserArchetype) => void;
+
+    // Daily Goals (NEW)
+    dailyGoal: number; // Target number of cards per day (5-30)
+    dailyProgress: number; // Number of cards swiped today
+    lastGoalSetDate: string | null; // 'YYYY-MM-DD' - for daily reset
+    setDailyGoal: (num: number) => void;
+    incrementDailyProgress: () => void;
+    resetDailyProgress: () => void;
+    checkAndResetDailyGoal: () => void;
 
     // Swipe Mode
     swipeMode: 'touch' | 'voice';
@@ -272,6 +285,44 @@ export const useLexicaStore = create<LexicaStore>()(
             testScore: null,
             recommendedLevel: null,
 
+            // Personalization (NEW)
+            userArchetype: null, // Will be set during onboarding
+            setUserArchetype: (type) => set({ userArchetype: type }),
+
+            // Daily Goals (NEW)
+            dailyGoal: 15, // Default: 15 cards per day
+            dailyProgress: 0, // Reset daily
+            lastGoalSetDate: null, // Will be set on first goal setting
+            setDailyGoal: (num) => set({
+                dailyGoal: num,
+                lastGoalSetDate: getTodayDateString()
+            }),
+            incrementDailyProgress: () => set((state) => ({
+                dailyProgress: state.dailyProgress + 1
+            })),
+            resetDailyProgress: () => set({ dailyProgress: 0 }),
+            checkAndResetDailyGoal: () => {
+                const today = getTodayDateString();
+                const { lastGoalSetDate, lastEnergyReset } = get();
+
+                // Reset daily progress if new day
+                if (lastGoalSetDate && lastGoalSetDate !== today) {
+                    set({
+                        dailyProgress: 0,
+                        // Don't reset lastGoalSetDate here - only reset on new slider interaction
+                    });
+                }
+
+                // Also check energy reset
+                if (shouldResetEnergy(lastEnergyReset)) {
+                    set({
+                        energy: 30,
+                        lastEnergyReset: getMidnightTimestamp(),
+                        todayLearnedWords: new Set(),
+                    });
+                }
+            },
+
             // Story Mode state
             unlockedStories: [],
             unlockedStoryPart1: [],
@@ -320,6 +371,13 @@ export const useLexicaStore = create<LexicaStore>()(
                 // Remove swiped card from deck
                 const updatedDeck = currentDeck.filter(card => card.id !== cardId);
 
+                // Increment daily progress ONLY when swiping right (learning)
+                // Reset to 0 first if it's a new day
+                const isNewDay = get().lastLearnedWordsReset !== today;
+                const newDailyProgress = direction === 'right'
+                    ? (isNewDay ? 1 : get().dailyProgress + 1)
+                    : (isNewDay ? 0 : get().dailyProgress);
+
                 // Update streak
                 const { currentStreak, longestStreak, lastActivityDate, studyHistory } = get();
                 let streakUpdate = {};
@@ -357,6 +415,7 @@ export const useLexicaStore = create<LexicaStore>()(
                     todayLearnedWords: updatedTodayLearnedWords,
                     lastLearnedWordsReset: today,
                     currentDeck: updatedDeck,
+                    dailyProgress: newDailyProgress,
                     studyHistory: updatedStudyHistory,
                     highestElo: newHighestElo,
                     ...streakUpdate,
@@ -409,7 +468,8 @@ export const useLexicaStore = create<LexicaStore>()(
                 // Only inject review cards if:
                 // 1. Auto-review is enabled
                 // 2. Haven't injected review cards yet this session
-                const shouldInjectReview = autoReviewInDeck && !reviewCardsInjectedThisSession;
+                // DISABLED: We don't inject review cards into main deck anymore
+                const shouldInjectReview = false;
                 const newDeck = generateInitialDeck(userStats, cardProgress, selectedLevel, forcedCardIds, shouldInjectReview);
 
                 // Mark that we've injected review cards (so it won't happen again on next loadNewDeck)
@@ -884,6 +944,12 @@ export const useLexicaStore = create<LexicaStore>()(
                 readStoryPart1: state.readStoryPart1,
                 storyQuizAttempts: state.storyQuizAttempts,
                 studyHistory: state.studyHistory,
+                // Daily Goals - persist daily progress tracking
+                dailyGoal: state.dailyGoal,
+                dailyProgress: state.dailyProgress,
+                lastGoalSetDate: state.lastGoalSetDate,
+                // Personalization
+                userArchetype: state.userArchetype,
                 // Speed Quiz - today's learned words
                 todayLearnedWords: Array.from(state.todayLearnedWords),
                 lastLearnedWordsReset: state.lastLearnedWordsReset,
@@ -930,6 +996,13 @@ export function initializeLexicaStore() {
 
     // Check and reset energy if new day
     store.checkAndResetEnergy();
+
+    // Reset dailyProgress if it's a new day (uses same date key as todayLearnedWords)
+    const today = getTodayDateString();
+    const { lastLearnedWordsReset, dailyProgress } = useLexicaStore.getState();
+    if (dailyProgress > 0 && lastLearnedWordsReset && lastLearnedWordsReset !== today) {
+        useLexicaStore.setState({ dailyProgress: 0 });
+    }
 
     // Reset session flag so review cards can be injected again on this new page load
     useLexicaStore.setState({ reviewCardsInjectedThisSession: false });

@@ -3,28 +3,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PartyPopper, Check, X, RotateCcw, ArrowRight } from 'lucide-react';
+import { PartyPopper, Check, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import VocabCard from './VocabCard';
 import { useLexicaStore } from '../store/lexicaStore';
 import { useSoundEffects } from '../hooks/useSoundEffects';
 import { analytics } from '../lib/analytics';
-import { getDueCards } from '../lib/eloAlgorithm';
 
 export default function SwipeDeck() {
     const cards = useLexicaStore(state => state.currentDeck);
-    const cardProgress = useLexicaStore(state => state.cardProgress);
     const swipeCard = useLexicaStore(state => state.swipeCard);
-    const consumeEnergy = useLexicaStore(state => state.consumeEnergy);
-    const energy = useLexicaStore(state => state.energy);
-
     const swipeMode = useLexicaStore(state => state.swipeMode);
 
     const { swipeRight, swipeLeft, buttonPress } = useSoundEffects();
 
-    const dueCount = getDueCards(cardProgress).length;
-
-    const [lastSwipeWasReview, setLastSwipeWasReview] = useState<boolean>(false);
     const [lastSwipeDirection, setLastSwipeDirection] = useState<'left' | 'right' | null>(null);
     const [cardExitDirections, setCardExitDirections] = useState<Record<string, 'left' | 'right'>>({});
 
@@ -41,31 +33,11 @@ export default function SwipeDeck() {
         cardId: string,
         source: 'manual' | 'voice' | 'quiz' = 'manual'
     ) => {
-        const isReviewCard = Boolean(cardProgress[cardId]);
-
-        // BLOCKING LOGIC: User cannot swipe RIGHT manually if it's a review card.
-        // For review cards, they MUST answer the quiz.
-        // For new cards, we allow swiping right to start learning.
-        if (direction === 'right' && source === 'manual' && isReviewCard) {
-            return;
-        }
-
+        // Voice mode requires voice input for swiping right
         if (swipeMode === 'voice' && direction === 'right' && source !== 'voice') {
             return;
         }
 
-        // ENERGY LOGIC: Only consume energy for NEW cards (not reviews) 
-        // AND only when swiping RIGHT (learning). Swiping LEFT (skipping) is free.
-        if (!isReviewCard && direction === 'right') {
-            if (energy <= 0) {
-                alert('Hết năng lượng rồi! Hãy quay lại vào ngày mai nhé.');
-                return;
-            }
-            const hasEnergy = consumeEnergy();
-            if (!hasEnergy) return;
-        }
-
-        setLastSwipeWasReview(isReviewCard);
         setLastSwipeDirection(direction);
         setTimeout(() => setLastSwipeDirection(null), 1000);
 
@@ -86,7 +58,7 @@ export default function SwipeDeck() {
         });
 
         swipeCard(cardId, direction);
-    }, [cardProgress, energy, consumeEnergy, swipeCard, swipeMode]);
+    }, [swipeCard, swipeMode, cards, swipeRight, swipeLeft]);
 
     // Keyboard controls (desktop)
     useEffect(() => {
@@ -132,9 +104,9 @@ export default function SwipeDeck() {
                     animate={{ scale: 1 }}
                     className="mb-4"
                 >
-                    <PartyPopper className="w-20 h-20 text-yellow-400 mx-auto" />
+                    <PartyPopper className="w-20 h-20 text-slate-400 mx-auto" />
                 </motion.div>
-                <h2 className="text-2xl font-bold text-cyan-400 mb-2">
+                <h2 className="text-2xl font-bold text-white mb-2">
                     Hoàn thành bộ bài!
                 </h2>
                 <p className="text-slate-400 text-sm mb-6">
@@ -142,33 +114,23 @@ export default function SwipeDeck() {
                 </p>
 
                 <div className="flex flex-col gap-3 w-full max-w-xs">
-                    {dueCount > 0 && (
-                        <Link
-                            href="/review"
-                            className="w-full flex items-center justify-between px-4 py-3 bg-amber-500/10 border border-amber-500/30 hover:border-amber-400 rounded-xl transition-all group"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-amber-500/20">
-                                    <RotateCcw className="w-4 h-4 text-amber-400" />
-                                </div>
-                                <div className="text-left">
-                                    <p className="text-amber-200 text-sm font-bold">Ôn tập chuyên sâu</p>
-                                    <p className="text-amber-500/70 text-[10px]">Còn {dueCount} từ đến hạn</p>
-                                </div>
-                            </div>
-                            <ArrowRight className="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                    )}
-
-                    <button
-                        onClick={() => {
-                            buttonPress();
-                            useLexicaStore.getState().loadNewDeck();
-                        }}
-                        className="w-full px-6 py-3 bg-cyan-600 hover:bg-cyan-700 rounded-xl font-bold text-white text-sm transition-colors flex items-center justify-center gap-2"
+                    {/* Primary CTA: Stories */}
+                    <Link
+                        href="/stories"
+                        onClick={() => buttonPress()}
+                        className="w-full px-6 py-3 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 rounded-xl font-semibold text-slate-200 text-sm transition-all flex items-center justify-center gap-2"
                     >
-                        HỌC TIẾP →
-                    </button>
+                        Đọc truyện thực hành
+                    </Link>
+
+                    {/* Secondary CTA: Learned */}
+                    <Link
+                        href="/learned"
+                        onClick={() => buttonPress()}
+                        className="w-full px-6 py-3 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 rounded-xl font-semibold text-slate-200 text-sm transition-all flex items-center justify-center gap-2"
+                    >
+                        Xem danh sách từ vựng
+                    </Link>
                 </div>
             </div>
         );
@@ -176,7 +138,7 @@ export default function SwipeDeck() {
 
     return (
         <div className="relative w-full h-100 flex items-center justify-center">
-            {/* Mode Toggle */}
+            {/* Swipe Feedback */}
             <AnimatePresence>
                 {lastSwipeDirection && (
                     <motion.div
@@ -190,14 +152,14 @@ export default function SwipeDeck() {
                             <div className="flex flex-col items-center">
                                 <span className="flex items-center gap-2 text-green-400">
                                     <Check className="w-12 h-12" />
-                                    {lastSwipeWasReview ? 'CHÍNH XÁC' : 'GHI NHỚ'}
+                                    GHI NHỚ
                                 </span>
                             </div>
                         ) : (
                             <div className="flex flex-col items-center">
                                 <span className="flex items-center gap-2 text-red-400">
                                     <X className="w-12 h-12" />
-                                    {lastSwipeWasReview ? 'QUÊN' : 'BỎ QUA'}
+                                    BỎ QUA
                                 </span>
                             </div>
                         )}
