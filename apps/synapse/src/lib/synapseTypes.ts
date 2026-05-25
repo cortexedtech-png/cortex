@@ -1,6 +1,6 @@
-import { ActionLog, SynapseChoice, SynapseScenario } from "@cortex/types";
+import { ActionLog, SynapseChoice, SynapseScenario, StoryArc } from "@cortex/types";
 
-export type { SynapseChoice, SynapseScenario };
+export type { SynapseChoice, SynapseScenario, StoryArc };
 
 export type ScenarioRequest = {
   sessionId: string;
@@ -8,4 +8,10 @@ export type ScenarioRequest = {
   loreId?: string;
   missionId?: string;
   sessionHistory?: ActionLog[];
+};
+
+export type StoryArcRequest = {
+  sessionId: string;
+  loreId?: string;
+  missionId?: string;
 };

@@ -131,3 +131,10 @@ export interface SynapseScenario {
   isFinalBoss?: boolean; // Indicate last stage
 }
 
+export interface StoryArc {
+  arcId: string;
+  loreId: string;
+  missionId?: string;
+  stages: SynapseScenario[]; // always 5 stages
+}
+

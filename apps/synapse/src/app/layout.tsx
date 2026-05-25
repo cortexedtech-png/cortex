@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { ThemeProvider } from "../context/ThemeContext";
 import "./globals.css";
 
 const sansFont = Inter({
@@ -29,8 +30,8 @@ export default function RootLayout({
       lang="vi"
       className={`${sansFont.variable} ${monoFont.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#0a0a0a] text-[#e6ffe8] font-mono">
-        {children}
+      <body className="min-h-full flex flex-col bg-[#0a0a0a]">
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

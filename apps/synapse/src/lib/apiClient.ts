@@ -1,4 +1,4 @@
-import type { ScenarioRequest, SynapseScenario } from "./synapseTypes";
+import type { ScenarioRequest, StoryArcRequest, SynapseScenario, StoryArc } from "./synapseTypes";
 
 export class ApiError extends Error {
   status: number;
@@ -33,5 +33,20 @@ export const apiClient = {
     }
 
     return parseJsonSafe<SynapseScenario>(res);
+  },
+
+  async fetchStoryArc(payload: StoryArcRequest): Promise<StoryArc> {
+    const res = await fetch("/api/story-arc", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const data = await parseJsonSafe<{ error?: string }>(res);
+      throw new ApiError(data.error || "Failed to fetch story arc", res.status);
+    }
+
+    return parseJsonSafe<StoryArc>(res);
   },
 };

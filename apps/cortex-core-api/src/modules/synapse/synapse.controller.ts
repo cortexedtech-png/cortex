@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { SynapseService } from './synapse.service';
-import { ActionLog, SynapseScenario } from '@cortex/types';
+import { ActionLog, SynapseScenario, StoryArc } from '@cortex/types';
 
 @Controller('synapse')
 export class SynapseController {
@@ -48,6 +48,30 @@ export class SynapseController {
       this.logger.error(`Error generating scenario: ${errorMessage}`);
       throw new HttpException(
         'Failed to generate scenario',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('story-arc')
+  async generateStoryArc(
+    @Body()
+    body: {
+      loreId?: string;
+      missionId?: string;
+    },
+  ): Promise<StoryArc> {
+    try {
+      return await this.synapseService.generateStoryArc(
+        body.loreId || 'cyberpunk-01',
+        body.missionId,
+      );
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error generating story arc: ${errorMessage}`);
+      throw new HttpException(
+        'Failed to generate story arc',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

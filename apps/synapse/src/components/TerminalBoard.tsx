@@ -4,10 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ActionLog } from "@cortex/types";
 import { apiClient } from "../lib/apiClient";
 import type { SynapseChoice, SynapseScenario } from "../lib/synapseTypes";
+import type { StoryArc } from "../lib/synapseTypes";
 import { useTypewriter } from "../hooks/useTypewriter";
 import { TerminalHeader } from "./TerminalHeader";
 import { TerminalOptions } from "./TerminalOptions";
 import { TerminalOutput, type TerminalMode } from "./TerminalOutput";
+import { useTheme } from "../context/ThemeContext";
 
 function makeId() {
   return Math.random().toString(36).slice(2);
@@ -32,10 +34,10 @@ function toActionLog(
   };
 }
 
-export function TerminalBoard(props: { 
-  initialLoreId?: string; 
+export function TerminalBoard(props: {
+  initialLoreId?: string;
   initialMissionId?: string;
-  onExit?: () => void 
+  onExit?: () => void
 }) {
   const [sessionId, setSessionId] = useState<string>(makeId());
   const [currentStage, setCurrentStage] = useState(1);
@@ -49,6 +51,7 @@ export function TerminalBoard(props: {
   const [mode, setMode] = useState<TerminalMode>("idle");
   const maxStages = 5;
   const [scenario, setScenario] = useState<SynapseScenario | null>(null);
+  const [storyArc, setStoryArc] = useState<SynapseScenario[]>([]);
   const [selected, setSelected] = useState<SynapseChoice | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sessionHistory, setSessionHistory] = useState<ActionLog[]>([]);
@@ -56,15 +59,24 @@ export function TerminalBoard(props: {
     Array<{ scenario: SynapseScenario; selected: SynapseChoice }>
   >([]);
   const [accent, setAccent] = useState<"green" | "amber">("green");
+  const { themeId, theme } = useTheme();
 
   const historyRef = useRef<ActionLog[]>([]);
+  const storyArcRef = useRef<SynapseScenario[]>([]);
 
   useEffect(() => {
     historyRef.current = sessionHistory;
   }, [sessionHistory]);
 
+  useEffect(() => {
+    storyArcRef.current = storyArc;
+  }, [storyArc]);
+
+  // Urban theme uses CSS variable accent; synapse allows toggle
   const accentClass =
-    accent === "green" ? "text-[#3dff7a]" : "text-[#ffb020]";
+    themeId === "urban"
+      ? "text-[color:var(--t-accent)]"
+      : accent === "green" ? "text-[#3dff7a]" : "text-[#ffb020]";
   const borderClass = "border border-[color:var(--terminal-border)]";
 
   const narrativeText = useMemo(() => scenario?.narrative || "", [scenario]);
@@ -79,27 +91,17 @@ export function TerminalBoard(props: {
     enabled: mode === "outcome",
   });
 
-  async function loadScenario(stage: number) {
-    setError(null);
-    setScenario(null); // Clear previous scenario immediately to avoid duplication
-    setMode("loading");
-
-    try {
-      const s = await apiClient.fetchScenario({
-        sessionId,
-        stage,
-        loreId,
-        missionId,
-        sessionHistory: historyRef.current,
-      });
-
-      setScenario(s);
-      setSelected(null);
-      setMode("narrative");
-    } catch (e) {
-      setMode("idle");
-      setError(e instanceof Error ? e.message : String(e));
+  function loadStageFromArc(stage: number) {
+    const arc = storyArcRef.current;
+    const s = arc[stage - 1];
+    if (!s) {
+      setError(`Không tìm thấy stage ${stage} trong story arc`);
+      return;
     }
+    setScenario(null);
+    setSelected(null);
+    setScenario(s);
+    setMode("narrative");
   }
 
   async function onStart() {
@@ -112,6 +114,7 @@ export function TerminalBoard(props: {
     setIsGameOver(false);
     setIsMissionClear(false);
     setScenario(null);
+    setStoryArc([]);
     setSelected(null);
     setError(null);
     setPastStages([]);
@@ -128,13 +131,14 @@ export function TerminalBoard(props: {
 
     try {
       setMode("loading");
-      const s = await apiClient.fetchScenario({
+      const arc: StoryArc = await apiClient.fetchStoryArc({
         sessionId: newSessionId,
-        stage: 1,
         loreId,
         missionId,
       });
-      setScenario(s);
+      storyArcRef.current = arc.stages;
+      setStoryArc(arc.stages);
+      setScenario(arc.stages[0] ?? null);
       setMode("narrative");
     } catch (e) {
       setMode("idle");
@@ -166,7 +170,7 @@ export function TerminalBoard(props: {
 
     if (choice.isCorrect) {
       setScore((s) => s + 10);
-      
+
       // Apply gameplay effects from correct choices
       if (choice.effect === 'restore_life') {
         setLives((l) => Math.min(3, l + 1));
@@ -176,7 +180,7 @@ export function TerminalBoard(props: {
     } else {
       setScore((s) => Math.max(0, s - 10));
       setIntegrity((i) => Math.max(0, i - 25)); // Mistake reduces system integrity
-      
+
       const nextLives = lives - 1;
       setLives(nextLives);
       if (nextLives <= 0) {
@@ -191,7 +195,7 @@ export function TerminalBoard(props: {
     if (!outcomeTw.done) return;
 
     setPastStages((prev) => [...prev, { scenario, selected }]);
-    
+
     if (currentStage >= maxStages) {
       setIsMissionClear(true);
       setMode("idle");
@@ -200,25 +204,13 @@ export function TerminalBoard(props: {
 
     const nextStage = currentStage + 1;
     setCurrentStage(nextStage);
-    try {
-      await loadScenario(nextStage);
-    } catch (e) {
-      setMode("idle");
-      setError(e instanceof Error ? e.message : String(e));
-    }
+    loadStageFromArc(nextStage);
   }
 
-  async function onRetry() {
+  function onRetry() {
     if (!scenario) return;
     if (isGameOver) return;
-    
-    // Attempt to reload the current stage
-    try {
-      await loadScenario(currentStage);
-    } catch (e) {
-      setMode("idle");
-      setError(e instanceof Error ? e.message : String(e));
-    }
+    loadStageFromArc(currentStage);
   }
 
   function onRestart() {
@@ -230,15 +222,18 @@ export function TerminalBoard(props: {
   }
 
   return (
-    <div className="flex-1 w-full relative overflow-hidden bg-[#0a0a0a]">
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-           style={{ backgroundImage: 'radial-gradient(#3dff7a 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
-      </div>
+    <div className="flex-1 w-full relative overflow-hidden" style={{ background: theme.colors.bg }}>
+      {themeId === "synapse" && (
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(#3dff7a 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+      )}
 
       <div className="mx-auto w-full max-w-[1400px] px-2 md:px-4 py-2 md:py-4 relative z-10">
         <div
-          className={`${borderClass} bg-[#0b0b0b]/90 backdrop-blur-sm shadow-[0_0_50px_rgba(0,0,0,0.7)]`}
-          style={{ boxShadow: "0 0 0 1px rgba(61,255,122,0.1) inset" }}
+          className={themeId === 'urban'
+            ? 'rounded-2xl bg-white border border-[#e2dfd8] shadow-sm overflow-hidden'
+            : `${borderClass} bg-[#0b0b0b]/90 backdrop-blur-sm shadow-[0_0_50px_rgba(0,0,0,0.7)]`}
+          style={themeId === 'urban' ? {} : { boxShadow: "0 0 0 1px rgba(61,255,122,0.1) inset" }}
         >
           <TerminalHeader
             currentStage={currentStage}
@@ -274,7 +269,7 @@ export function TerminalBoard(props: {
               pastStages={pastStages}
             />
 
-            <div className="xl:col-span-3 bg-black/20">
+            <div className={`xl:col-span-3 ${themeId === 'urban' ? 'bg-[#faf9f7] border-l border-[#e2dfd8]' : 'bg-black/20'}`}>
               <div className="px-4 py-6 space-y-6">
                 <TerminalOptions
                   mode={mode}
