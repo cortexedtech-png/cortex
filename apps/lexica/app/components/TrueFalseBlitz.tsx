@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Check, X as XIcon, Trophy, Clock } from 'lucide-react';
 import { useSoundEffects } from '../hooks/useSoundEffects';
 import { VOCAB_DATABASE } from '../data/vocabCards';
+import ChallengeButton from './ChallengeButton';
 
 interface TrueFalseBlitzProps {
     learnedWordIds: string[];
     onClose: () => void;
+    onGameEnd?: (score: number) => void;
 }
 
 type Question = {
@@ -17,8 +19,21 @@ type Question = {
     isCorrect: boolean;
 };
 
-export default function TrueFalseBlitz({ learnedWordIds, onClose }: TrueFalseBlitzProps) {
+/** Fisher-Yates shuffle — trả về mảng mới đã xáo */
+function shuffleArray<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+export default function TrueFalseBlitz({ learnedWordIds, onClose, onGameEnd }: TrueFalseBlitzProps) {
     const { click, quizCorrect, quizWrong } = useSoundEffects();
+
+    // Shuffle queue — đảm bảo mỗi từ xuất hiện 1 lần trước khi lặp lại
+    const wordQueueRef = useRef<string[]>([]);
 
     const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
     const [score, setScore] = useState(0);
@@ -52,6 +67,10 @@ export default function TrueFalseBlitz({ learnedWordIds, onClose }: TrueFalseBli
         return () => clearInterval(timer);
     }, [isPlaying, gameOver, score, highScore]);
 
+    // Báo cáo điểm cuối cho challenge page khi game kết thúc
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { if (gameOver) onGameEnd?.(score); }, [gameOver]);
+
     const generateQuestion = (): Question => {
         // Get all learned cards
         const learnedCards = VOCAB_DATABASE.filter(c =>
@@ -62,8 +81,12 @@ export default function TrueFalseBlitz({ learnedWordIds, onClose }: TrueFalseBli
             return { word: '', meaning: '', isCorrect: true };
         }
 
-        // Random select a card
-        const correctCard = learnedCards[Math.floor(Math.random() * learnedCards.length)];
+        // Lấy từ tiếp theo từ shuffle queue
+        if (wordQueueRef.current.length === 0) {
+            wordQueueRef.current = shuffleArray(learnedWordIds);
+        }
+        const nextId = wordQueueRef.current.pop()!;
+        const correctCard = learnedCards.find(c => c.id === nextId) ?? learnedCards[0];
 
         // 50% chance of correct pairing
         const isCorrect = Math.random() > 0.5;
@@ -98,6 +121,8 @@ export default function TrueFalseBlitz({ learnedWordIds, onClose }: TrueFalseBli
         setCorrectCount(0);
         setTime(60);
         setFeedback(null);
+        // Reset queue khi bắt đầu game mới
+        wordQueueRef.current = shuffleArray(learnedWordIds);
         setCurrentQuestion(generateQuestion());
     };
 
@@ -304,6 +329,7 @@ export default function TrueFalseBlitz({ learnedWordIds, onClose }: TrueFalseBli
                         >
                             Play Again
                         </button>
+                        <ChallengeButton gameType="truefalse" score={score} />
                     </motion.div>
                 )}
             </motion.div>

@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Trophy, X, Clock, Flame, Target, Star } from 'lucide-react';
 import { useSoundEffects } from '../hooks/useSoundEffects';
 import { VOCAB_DATABASE } from '../data/vocabCards';
+import ChallengeButton from './ChallengeButton';
 
 interface SpeedQuizProps {
     learnedWordIds: string[];
     todayWordIds?: string[];
     onClose: () => void;
+    onGameEnd?: (score: number) => void;
 }
 
 type QuizMode = 'all' | 'today';
@@ -25,8 +27,21 @@ const TIME_PER_QUESTION = 8; // seconds
 const STREAK_BONUS_MULTIPLIER = 0.5; // +50% per streak
 const SPEED_BONUS_MAX = 500; // Max bonus for instant answer
 
-export default function SpeedQuiz({ learnedWordIds, todayWordIds = [], onClose }: SpeedQuizProps) {
+/** Fisher-Yates shuffle — trả về mảng mới đã xáo */
+function shuffleArray<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+export default function SpeedQuiz({ learnedWordIds, todayWordIds = [], onClose, onGameEnd }: SpeedQuizProps) {
     const { click, quizCorrect, quizWrong, levelUp } = useSoundEffects();
+
+    // Shuffle queue — đảm bảo mỗi từ xuất hiện 1 lần trước khi lặp lại
+    const wordQueueRef = useRef<string[]>([]);
 
     const [mode, setMode] = useState<QuizMode | null>(null);
     const [gameState, setGameState] = useState<'menu' | 'playing' | 'gameover'>('menu');
@@ -40,10 +55,10 @@ export default function SpeedQuiz({ learnedWordIds, todayWordIds = [], onClose }
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
     // High scores from localStorage (lazy initialization)
-    const [highScoreAll, setHighScoreAll] = useState(() => 
+    const [highScoreAll, setHighScoreAll] = useState(() =>
         parseInt(localStorage.getItem('speedquiz_highscore_all') || '0')
     );
-    const [highScoreToday, setHighScoreToday] = useState(() => 
+    const [highScoreToday, setHighScoreToday] = useState(() =>
         parseInt(localStorage.getItem('speedquiz_highscore_today') || '0')
     );
 
@@ -51,7 +66,11 @@ export default function SpeedQuiz({ learnedWordIds, todayWordIds = [], onClose }
     const generateQuestion = useCallback((wordIds: string[]): QuizQuestion | null => {
         if (wordIds.length === 0) return null;
 
-        const randomWordId = wordIds[Math.floor(Math.random() * wordIds.length)];
+        // Lấy từ tiếp theo từ shuffle queue, refill khi hết
+        if (wordQueueRef.current.length === 0) {
+            wordQueueRef.current = shuffleArray(wordIds);
+        }
+        const randomWordId = wordQueueRef.current.pop()!;
         const wordData = VOCAB_DATABASE.find(w => w.id === randomWordId);
         if (!wordData) return null;
 
@@ -91,6 +110,8 @@ export default function SpeedQuiz({ learnedWordIds, todayWordIds = [], onClose }
         setIsCorrect(null);
 
         const wordIds = selectedMode === 'today' ? todayWordIds : learnedWordIds;
+        // Khởi tạo shuffle queue khi bắt đầu game mới
+        wordQueueRef.current = shuffleArray(wordIds);
         const question = generateQuestion(wordIds);
         setCurrentQuestion(question);
     };
@@ -109,7 +130,8 @@ export default function SpeedQuiz({ learnedWordIds, todayWordIds = [], onClose }
             setHighScoreToday(score);
             levelUp();
         }
-    }, [mode, score, highScoreAll, highScoreToday, levelUp]);
+        onGameEnd?.(score);
+    }, [mode, score, highScoreAll, highScoreToday, levelUp, onGameEnd]);
 
     // Handle timeout
     const handleTimeout = useCallback(() => {
@@ -438,6 +460,7 @@ export default function SpeedQuiz({ learnedWordIds, todayWordIds = [], onClose }
                             >
                                 Chơi lại
                             </button>
+                            <ChallengeButton gameType="speed" score={score} />
                             <button
                                 onClick={() => {
                                     click();

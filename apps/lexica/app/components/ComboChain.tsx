@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Trophy, X, Zap } from 'lucide-react';
 import { useSoundEffects } from '../hooks/useSoundEffects';
@@ -10,10 +10,24 @@ import { VocabCardData } from '../components/VocabCard';
 interface ComboChainProps {
     learnedWordIds: string[];
     onClose: () => void;
+    onGameEnd?: (score: number) => void;
 }
 
-export default function ComboChain({ learnedWordIds, onClose }: ComboChainProps) {
+/** Fisher-Yates shuffle — trả về mảng mới đã xáo */
+function shuffleArray<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+export default function ComboChain({ learnedWordIds, onClose, onGameEnd }: ComboChainProps) {
     const { click, quizCorrect, quizWrong } = useSoundEffects();
+
+    // Shuffle queue — đảm bảo mỗi từ xuất hiện 1 lần trước khi lặp lại
+    const wordQueueRef = useRef<string[]>([]);
 
     const [currentCard, setCurrentCard] = useState<Omit<VocabCardData, 'state'> | null>(null);
     const [options, setOptions] = useState<string[]>([]);
@@ -35,12 +49,12 @@ export default function ComboChain({ learnedWordIds, onClose }: ComboChainProps)
         return randomBuffer[0] % arrayLength;
     };
 
-    const getRandomWordId = () => {
-        return learnedWordIds[getRandomIndex(learnedWordIds.length)];
-    };
-
     const generateQuestion = () => {
-        const randomId = getRandomWordId();
+        // Lấy từ tiếp theo từ shuffle queue
+        if (wordQueueRef.current.length === 0) {
+            wordQueueRef.current = shuffleArray(learnedWordIds);
+        }
+        const randomId = wordQueueRef.current.pop()!;
         const card = VOCAB_DATABASE.find(c => c.id === randomId);
         if (!card) return;
 
@@ -84,6 +98,8 @@ export default function ComboChain({ learnedWordIds, onClose }: ComboChainProps)
         setCombo(0);
         setMaxCombo(0);
         setAnswered(0);
+        // Reset queue khi bắt đầu game mới
+        wordQueueRef.current = shuffleArray(learnedWordIds);
         generateQuestion();
     };
 
@@ -145,7 +161,7 @@ export default function ComboChain({ learnedWordIds, onClose }: ComboChainProps)
                 className="w-full md:max-w-2xl bg-slate-800 border-0 md:border border-slate-700 md:rounded-xl px-6 pb-6 pt-16 sm:p-8 relative min-h-full md:min-h-0 md:max-h-[90vh] md:overflow-y-auto"
             >
                 <button
-                    onClick={() => { click(); onClose(); }}
+                    onClick={() => { click(); if (isPlaying) onGameEnd?.(maxCombo); onClose(); }}
                     className="absolute top-4 right-4 p-2 rounded-full bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-all"
                 >
                     <X className="w-5 h-5" />

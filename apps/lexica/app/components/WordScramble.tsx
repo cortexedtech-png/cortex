@@ -1,20 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Shuffle, Trophy, X, RotateCcw, Lightbulb, SkipForward, Heart, Delete } from 'lucide-react';
 import { useSoundEffects } from '../hooks/useSoundEffects';
 import { VOCAB_DATABASE } from '../data/vocabCards';
+import ChallengeButton from './ChallengeButton';
 
 import { VocabCardData } from './VocabCard';
 
 interface WordScrambleProps {
     learnedWordIds: string[];
     onClose: () => void;
+    onGameEnd?: (score: number) => void;
 }
 
-export default function WordScramble({ learnedWordIds, onClose }: WordScrambleProps) {
+/** Fisher-Yates shuffle — trả về mảng mới đã xáo */
+function shuffleArray<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+export default function WordScramble({ learnedWordIds, onClose, onGameEnd }: WordScrambleProps) {
     const { click, quizCorrect, quizWrong } = useSoundEffects();
+
+    // Shuffle queue — đảm bảo mỗi từ xuất hiện 1 lần trước khi lặp lại
+    const wordQueueRef = useRef<string[]>([]);
 
     const [currentCard, setCurrentCard] = useState<Omit<VocabCardData, 'state'> | null>(null);
     const [scrambledLetters, setScrambledLetters] = useState<string[]>([]);
@@ -48,7 +63,10 @@ export default function WordScramble({ learnedWordIds, onClose }: WordScramblePr
     };
 
     const getRandomWord = () => {
-        const randomId = learnedWordIds[Math.floor(Math.random() * learnedWordIds.length)];
+        if (wordQueueRef.current.length === 0) {
+            wordQueueRef.current = shuffleArray(learnedWordIds);
+        }
+        const randomId = wordQueueRef.current.pop()!;
         const card = VOCAB_DATABASE.find(c => c.id === randomId);
         if (card) {
             setCurrentCard(card);
@@ -68,6 +86,8 @@ export default function WordScramble({ learnedWordIds, onClose }: WordScramblePr
         setComboCount(0);
         setLives(3);
         setAnswered(0);
+        // Reset queue khi bắt đầu game mới
+        wordQueueRef.current = shuffleArray(learnedWordIds);
         getRandomWord();
     };
 
@@ -177,6 +197,10 @@ export default function WordScramble({ learnedWordIds, onClose }: WordScramblePr
             handleLetterClick(matchingIndex);
         }
     };
+
+    // Báo cáo điểm cuối cho challenge page khi game kết thúc
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { if (gameOver) onGameEnd?.(score); }, [gameOver]);
 
     // Keyboard event handler (after handleClearLast and handleKeyboardLetter are declared)
     useEffect(() => {
@@ -441,6 +465,7 @@ export default function WordScramble({ learnedWordIds, onClose }: WordScramblePr
                         >
                             Play Again
                         </button>
+                        <ChallengeButton gameType="scramble" score={score} />
                     </motion.div>
                 )}
             </motion.div>

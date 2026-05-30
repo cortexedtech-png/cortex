@@ -5,17 +5,31 @@ import { motion } from 'framer-motion';
 import { Keyboard, Trophy, X, Clock, Zap } from 'lucide-react';
 import { useSoundEffects } from '../hooks/useSoundEffects';
 import { VOCAB_DATABASE } from '../data/vocabCards';
+import ChallengeButton from './ChallengeButton';
 
 import { VocabCardData } from './VocabCard';
 
 interface TypeChallengeProps {
     learnedWordIds: string[];
     onClose: () => void;
+    onGameEnd?: (score: number) => void;
 }
 
-export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallengeProps) {
+/** Fisher-Yates shuffle — trả về mảng mới đã xáo */
+function shuffleArray<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+export default function TypeChallenge({ learnedWordIds, onClose, onGameEnd }: TypeChallengeProps) {
     const { click, quizCorrect, quizWrong } = useSoundEffects();
     const inputRef = useRef<HTMLInputElement>(null);
+    // Shuffle queue — đảm bảo mỗi từ xuất hiện 1 lần trước khi lặp lại
+    const wordQueueRef = useRef<string[]>([]);
 
     const [currentCard, setCurrentCard] = useState<Omit<VocabCardData, 'state'> | null>(null);
     const [input, setInput] = useState('');
@@ -51,8 +65,15 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
         return () => clearInterval(timer);
     }, [isPlaying, gameOver, score, highScore]);
 
+    // Báo cáo điểm cuối cho challenge page khi game kết thúc
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { if (gameOver) onGameEnd?.(score); }, [gameOver]);
+
     const getRandomWord = () => {
-        const randomId = learnedWordIds[Math.floor(Math.random() * learnedWordIds.length)];
+        if (wordQueueRef.current.length === 0) {
+            wordQueueRef.current = shuffleArray(learnedWordIds);
+        }
+        const randomId = wordQueueRef.current.pop()!;
         return VOCAB_DATABASE.find(card => card.id === randomId);
     };
 
@@ -67,6 +88,8 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
         setTime(60);
         setInput('');
         setFeedback(null);
+        // Reset queue khi bắt đầu game mới
+        wordQueueRef.current = shuffleArray(learnedWordIds);
         setCurrentCard(getRandomWord() ?? null);
         setTimeout(() => inputRef.current?.focus(), 100);
     };
@@ -278,6 +301,7 @@ export default function TypeChallenge({ learnedWordIds, onClose }: TypeChallenge
                         >
                             Play Again
                         </button>
+                        <ChallengeButton gameType="type" score={score} />
                     </motion.div>
                 )}
             </motion.div>
