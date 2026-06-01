@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
-import { TrendingUp, BookOpen, Award, Settings, RotateCcw, X, BarChart3, TrendingDown, Zap, Check, Mic, Hand, Brain } from 'lucide-react';
+import { TrendingUp, BookOpen, Award, Settings, RotateCcw, X, BarChart3, TrendingDown, Zap, Check, Mic, Hand, Brain, Users } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ErrorBoundary from './components/ErrorBoundary';
 import SwipeDeck from './components/SwipeDeck';
@@ -743,6 +743,13 @@ function HomeContent() {
               </div>
             </Link>
 
+            <Link href="/buddy" className="flex-1">
+              <div className="flex flex-col items-center justify-center gap-0.5 py-3 text-cyan-500 hover:text-cyan-400 transition-colors active:scale-95 h-full">
+                <Users className="w-4 h-4" />
+                <span className="text-[10px]">Study Buddy</span>
+              </div>
+            </Link>
+
             {dueToday > 0 && (
               <Link href="/review" className="flex-1">
                 <div className="flex flex-col items-center justify-center gap-0.5 py-3 text-amber-500 hover:text-amber-400 transition-colors active:scale-95 h-full">
@@ -780,8 +787,8 @@ function HomeContent() {
             data-tour-id="voice-mode-toggle"
             onClick={() => { click(); setSwipeMode(isVoiceMode ? 'touch' : 'voice'); }}
             className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors w-full ${isVoiceMode
-                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
-                : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:text-slate-300 hover:border-slate-600'
+              ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
+              : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:text-slate-300 hover:border-slate-600'
               }`}
           >
             {isVoiceMode ? <Mic className="w-4 h-4 shrink-0" /> : <Hand className="w-4 h-4 shrink-0" />}
@@ -811,6 +818,11 @@ function HomeContent() {
               <BookOpen className="w-4 h-4 shrink-0" />
               <span>Từ đã học</span>
               {learnedCount > 0 && <span className="ml-auto text-xs text-slate-600">{learnedCount}</span>}
+            </Link>
+            <Link href="/buddy" data-tour-id="buddy-link"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-cyan-400 hover:text-cyan-300 hover:bg-slate-800/60 transition-colors">
+              <Users className="w-4 h-4 shrink-0" />
+              <span>Study Buddy</span>
             </Link>
             {dueToday > 0 && (
               <Link href="/review" data-tour-id="review-link"

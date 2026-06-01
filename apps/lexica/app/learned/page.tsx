@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { BookOpen, Trophy, Save, Sparkles, BookMarked, RotateCcw, Gamepad2, FlaskConical, ArrowDown } from 'lucide-react';
+import { BookOpen, Trophy, Save, Sparkles, BookMarked, RotateCcw, Gamepad2, FlaskConical, ArrowDown, Users } from 'lucide-react';
 import { useLexicaStore } from '../store/lexicaStore';
 import GameHub from '../components/GameHub';
 import { getProgressStats } from '../lib/eloAlgorithm';
@@ -173,6 +173,24 @@ export default function LearnedPage() {
                                     <div className="text-white font-semibold text-sm mb-0.5">Story Packs</div>
                                     <div className="text-slate-400 text-xs">
                                         Thực hành qua câu chuyện dark comedy
+                                    </div>
+                                </div>
+                            </div>
+                            <span className="text-slate-400 text-lg font-bold group-hover:translate-x-1 transition-transform">→</span>
+                        </Link>
+
+                        <Link
+                            href="/buddy"
+                            className="w-full flex items-center justify-between p-4 rounded-xl bg-slate-800/40 border border-cyan-500/20 hover:border-cyan-500/50 transition-all hover:scale-[1.01] active:scale-95 group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-cyan-500/10">
+                                    <Users className="w-5 h-5 text-cyan-400" />
+                                </div>
+                                <div>
+                                    <div className="text-white font-semibold text-sm mb-0.5">Study Buddy</div>
+                                    <div className="text-slate-400 text-xs">
+                                        Học cùng bạn bè, duy trì chuỗi đôi
                                     </div>
                                 </div>
                             </div>
