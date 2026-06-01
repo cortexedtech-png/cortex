@@ -1,4 +1,14 @@
 {
+    "share_target": {
+        "action": "/share",
+        "method": "GET",
+        "enctype": "application/x-www-form-urlencoded",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    },
     "name": "LEXICA - IELTS Vocabulary Swiper",
     "short_name": "LEXICA",
     "description": "Master IELTS vocabulary through addictive swipe-based micro-learning",
@@ -30,6 +40,16 @@
             "name": "Start Learning",
             "url": "/",
             "description": "Start swiping vocabulary cards"
+        },
+        {
+            "name": "Daily Challenge",
+            "url": "/challenge",
+            "description": "Test your vocabulary with daily challenges"
+        },
+        {
+            "name": "Progress Tracker",
+            "url": "/progress",
+            "description": "View your learning progress"
         }
     ]
 }

@@ -1,5 +1,7 @@
 'use client';
 
+import { registerPushNotifications } from './lib/pushNotifications';
+
 import { useEffect, useState, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -72,7 +74,13 @@ function HomeContent() {
   // Initialize store on mount
   useEffect(() => {
     initializeLexicaStore();
+
+    if (typeof window !== 'undefined') {
+      // Register push notifications
+      registerPushNotifications();
+    }
   }, []);
+
 
   // Redirect to onboarding or test if needed
   useEffect(() => {
@@ -118,6 +126,13 @@ function HomeContent() {
   const analysis = getDifficultyAnalysis(userStats);
   const progressStats = getProgressStats(cardProgress);
   const dueToday = previewDue || progressStats.dueToday;
+
+  // Update badge count when progress changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'setAppBadge' in navigator) {
+      navigator.setAppBadge(progressStats.dueToday).catch(console.error);
+    }
+  }, [progressStats.dueToday]);
 
   // Show review prompt once per day when there are due cards
   useEffect(() => {
