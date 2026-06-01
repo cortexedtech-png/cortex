@@ -36,13 +36,20 @@ export default function BuddyPage() {
         if (!user) return;
         const loadBuddies = async () => {
             setLoadingBuddies(true);
-            const list = await getMyBuddies(user.id);
-            setBuddies(list);
-            // Update duo streaks in background
-            for (const b of list) {
-                checkAndUpdateDuoStreak(b.pairId, user.id, b.id);
+            try {
+                console.log('Starting buddy data load...');
+                const list = await getMyBuddies(user.id);
+                console.log('Buddy data loaded:', list);
+                setBuddies(list);
+                // Update duo streaks in background
+                for (const b of list) {
+                    checkAndUpdateDuoStreak(b.pairId, user.id, b.id);
+                }
+            } catch (error) {
+                console.error('Error loading buddies:', error);
+            } finally {
+                setLoadingBuddies(false);
             }
-            setLoadingBuddies(false);
         };
         loadBuddies();
     }, [user]);
@@ -350,6 +357,11 @@ function BuddyCard({ buddy, myGoalMet, onRemove }: {
                             <span className="text-orange-400 text-xs flex items-center gap-0.5">
                                 <Flame className="w-3 h-3" />
                                 {buddy.today?.streak ?? 0}
+                            </span>
+                            {/* ELO Rating */}
+                            <span className="text-xs text-slate-400 flex items-center gap-0.5">
+                                <Target className="w-3 h-3" />
+                                {buddy.today?.words_swiped || 0}/{buddy.today?.daily_goal || 0}
                             </span>
                             {/* Duo streak */}
                             <span className={`text-xs flex items-center gap-0.5 ${duoActive ? 'text-cyan-400' : 'text-slate-500'}`}>

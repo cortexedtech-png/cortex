@@ -18,6 +18,8 @@ export interface BuddyPair {
     last_duo_date: string | null;
     target_words: number;
     created_at: string;
+    user_a?: { id: string; nickname: string; elo_rating: number };
+    user_b?: { id: string; nickname: string; elo_rating: number };
 }
 
 export interface BuddyInfo {
@@ -116,44 +118,68 @@ export async function acceptInvite(
 /** Lấy danh sách buddies kèm hoạt động hôm nay */
 export async function getMyBuddies(userId: string): Promise<BuddyInfo[]> {
     const supabase = getSupabaseClient();
-    if (!supabase) return [];
+    if (!supabase) {
+        console.log('No supabase client');
+        return [];
+    }
 
-    const { data: pairs } = await supabase
+    console.log('Fetching buddy pairs for user:', userId);
+    const { data: pairs, error: pairsError } = await supabase
         .from('buddy_pairs')
         .select('*')
         .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`);
 
-    if (!pairs || pairs.length === 0) return [];
+    console.log('Pairs query results:', { data: pairs, error: pairsError });
+
+    if (!pairs || pairs.length === 0) {
+        console.log('No buddy pairs found');
+        return [];
+    }
 
     const buddyIds = pairs.map((p: BuddyPair) => (p.user_a_id === userId ? p.user_b_id : p.user_a_id));
 
-    // Lấy profile + activity hôm nay của tất cả buddy song song
+    // Get profiles and activities in parallel
+    console.log('Fetching profiles for buddy IDs:', buddyIds);
     const [profilesRes, activityRes] = await Promise.all([
-        supabase.from('profiles').select('id, nickname').in('id', buddyIds),
+        supabase.from('profiles')
+            .select('id, nickname')
+            .or(buddyIds.map(id => `id.eq.${id}`).join(','))
+            .then(res => {
+                if (res.error) console.error('Profile query error:', res.error);
+                return res;
+            }),
         supabase
             .from('daily_activity')
             .select('*')
             .in('user_id', buddyIds)
-            .eq('date', todayDate()),
+            .eq('date', todayDate())
     ]);
 
-    const profiles: Record<string, string> = {};
-    for (const p of (profilesRes.data ?? [])) profiles[p.id] = p.nickname;
+    console.log('Profiles query results:', profilesRes);
+    console.log('Activities query results:', activityRes);
+
+    const profiles: Record<string, { nickname: string }> = {};
+    for (const p of (profilesRes.data ?? [])) {
+        profiles[p.id] = { nickname: p.nickname };
+    }
 
     const activities: Record<string, DailyActivity> = {};
     for (const a of (activityRes.data ?? [])) activities[a.user_id] = a;
 
-    return pairs.map((pair: BuddyPair) => {
+    const result = pairs.map((pair: BuddyPair) => {
         const buddyId = pair.user_a_id === userId ? pair.user_b_id : pair.user_a_id;
         return {
             id: buddyId,
-            nickname: profiles[buddyId] ?? 'Unknown',
+            nickname: profiles[buddyId]?.nickname ?? 'Unknown',
             pairId: pair.id,
             duoStreak: pair.duo_streak,
             targetWords: pair.target_words,
             today: activities[buddyId] ?? null,
         };
     });
+
+    console.log('Final mapped buddy data:', result);
+    return result;
 }
 
 /** Cập nhật duo streak sau khi check cả hai đạt goal hôm qua */
